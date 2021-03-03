@@ -1,0 +1,53 @@
+version: "3"
+
+networks:
+  SBF:
+
+services:
+  db:
+    container_name: SBF-Postgres
+    restart: on-failure
+    image: postgres:12
+    hostname: postgresql
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=sbf
+    networks:
+      - SBF
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: SBF-PG_Admin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - "8080:80"
+    networks:                                                               
+      - SBF
+    depends_on:
+      - db
+
+  api:
+    restart: on-failure
+    build: .
+    container_name: SBF-API
+    command: uvicorn app.asgi:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@postgresql/sbf
+      - JWT_SECRET=The quick brown fox jumps over the lazy dog
+      - JWT_EXPIRATION_DAYS=7
+    volumes: 
+      - .:/code
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    networks:
+      - SBF
+
+volumes:
+  postgres-data:
