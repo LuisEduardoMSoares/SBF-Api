@@ -1,3 +1,4 @@
+from app.modules import transactions
 import sqlalchemy as db
 
 from sqlalchemy.orm import relationship
@@ -7,7 +8,7 @@ from ...db.engine import Base
 from ...db.base import BaseMixin
 
 
-class User(Base, BaseMixin):
+class User(BaseMixin, Base):
     __tablename__ = 'base_users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -16,6 +17,9 @@ class User(Base, BaseMixin):
     username = db.Column(db.String, unique=True)
     email = db.Column(db.String, unique=True)
     password = db.Column(db.String)
+
+    # Relationships
+    transactions = relationship("Transaction", lazy="select", back_populates="user")
     
 
     def hash_password(self) -> None:

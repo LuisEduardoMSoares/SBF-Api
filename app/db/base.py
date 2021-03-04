@@ -1,19 +1,18 @@
 import sqlalchemy as db
-from sqlalchemy import func
 
 from sqlalchemy.orm import Session
 
 
 # Base Mixin object.
-class BaseMixin():
+class BaseMixin(object):
     __mapper_args__ = {'always_refresh': True}
 
     id = db.Column(db.Integer, primary_key=True)
-    created_on = db.Column(db.DateTime, default=func.now())
-    updated_on = db.Column(db.DateTime, onupdate=func.now())
-
+    created_on = db.Column(db.DateTime, default=db.func.now())
+    updated_on = db.Column(db.DateTime, onupdate=db.func.now())
+    
     @property
-    def metadata(self):
+    def metadatetime(self):
         return self
 
     def insert(self, session: Session) -> object:
