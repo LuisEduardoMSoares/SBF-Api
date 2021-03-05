@@ -1,6 +1,6 @@
 [[package]]
 name = "alembic"
-version = "1.5.5"
+version = "1.5.6"
 description = "A database migration tool for SQLAlchemy."
 category = "main"
 optional = false
@@ -226,14 +226,14 @@ typing-extensions = {version = "*", markers = "python_version < \"3.8\""}
 [package.extras]
 standard = ["websockets (>=8.0.0,<9.0.0)", "watchgod (>=0.6)", "python-dotenv (>=0.13)", "PyYAML (>=5.1)", "httptools (>=0.1.0,<0.2.0)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1)", "colorama (>=0.4)"]
 
-[MetaDatetimeSchema]
+[metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
 content-hash = "932ec78540ae08ecdbda1bdc207e677fcf4e05bc3ab4dc4168cc38d368abc652"
 
 [metadata.files]
 alembic = [
-    {file = "alembic-1.5.5.tar.gz", hash = "sha256:df0028c19275a2cff137e39617a39cdcdbd1173733b87b6bfa257b7c0860213b"},
+    {file = "alembic-1.5.6.tar.gz", hash = "sha256:8a8ccd58a262b1e3ac79b7224d0f9a4ac3bf96ace149972feb3ef9d7a06ac8b5"},
 ]
 click = [
     {file = "click-7.1.2-py2.py3-none-any.whl", hash = "sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc"},
