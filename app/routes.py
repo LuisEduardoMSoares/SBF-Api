@@ -7,27 +7,27 @@ from . import API_PREFIX
 from .db.engine import create_all
 from .db.engine import drop_all
 
-router = APIRouter()
+route = APIRouter()
 
 
 
-@router.get("/")
+@route.get("/")
 def root():
     return {"message": "SBF Estoque - API"}
 
 
-@router.get("/health")
+@route.get("/health")
 def health_check():
     return {"message": "Health check ok."}
 
 
-@router.get("/create-all")
+@route.get("/create-all")
 def health_check():
     create_all()
     return {"message": "All tables created."}
 
 
-@router.get("/drop-all")
+@route.get("/drop-all")
 def health_check():
     drop_all()
     return {"message": "Database dropped."}
