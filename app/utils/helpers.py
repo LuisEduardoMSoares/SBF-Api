@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 
-class Metadata(BaseModel):
+class MetaDatetimeSchema(BaseModel):
     created_on: Optional[datetime]
     updated_on: Optional[datetime]
 

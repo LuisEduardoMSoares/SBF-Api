@@ -1,5 +1,5 @@
 from typing import Optional
-from ...utils.helpers import BaseSchema, Metadata
+from ...utils.helpers import BaseSchema, MetaDatetimeSchema
 
 
 class UserCreate(BaseSchema):
@@ -42,7 +42,7 @@ class UserResponse(BaseSchema):
     last_name: str
     username: str
     email: str
-    metadata: Metadata
+    metadatetime: MetaDatetimeSchema
 
     class Config:
         schema_extra = {
@@ -52,7 +52,7 @@ class UserResponse(BaseSchema):
                 "last_name": "Eduardo",
                 "username": "dudu",
                 "email": "dudu@mail.com",
-                "metadata": {
+                "metadatetime": {
                     "created_on": "2020-01-01T00:00:00.000001",
                     "updated_on": "2020-01-01T00:00:00.000001"
                 }
