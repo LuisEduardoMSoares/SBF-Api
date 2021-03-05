@@ -231,7 +231,7 @@ lock-version = "1.1"
 python-versions = "^3.7"
 content-hash = "932ec78540ae08ecdbda1bdc207e677fcf4e05bc3ab4dc4168cc38d368abc652"
 
-[MetaDatetimeSchema.files]
+[metadata.files]
 alembic = [
     {file = "alembic-1.5.5.tar.gz", hash = "sha256:df0028c19275a2cff137e39617a39cdcdbd1173733b87b6bfa257b7c0860213b"},
 ]
