@@ -19,6 +19,8 @@ class User(BaseMixin, Base):
     password = db.Column(db.String)
 
     # Relationships
+    products_created = relationship("Product", lazy="select", back_populates="user")
+    providers_created = relationship("Provider", lazy="select", back_populates="user")
     transactions = relationship("Transaction", lazy="select", back_populates="user")
     
 

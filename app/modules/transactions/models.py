@@ -6,18 +6,23 @@ from passlib.hash import pbkdf2_sha256
 from ...db.engine import Base
 from ...db.base import BaseMixin
 
+from .schemas import TransactionTypeEnum
+
 
 class Transaction(BaseMixin, Base):
     __tablename__ = 'base_transactions'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-
-    product_id = db.Column(db.Integer, db.ForeignKey('base_products.id'))
-    provider_id = db.Column(db.Integer, db.ForeignKey('base_providers.id'))
-    user_id = db.Column(db.Integer, db.ForeignKey('base_users.id'))
+    type = db.Column(db.Enum(TransactionTypeEnum), nullable=False)
+    description = db.Column(db.TEXT)
+    quantity = db.Column(db.Integer, nullable=False)
+    
+    # Foreign keys from Product, Provider and User
+    product_id = db.Column(db.Integer, db.ForeignKey('base_products.id'), nullable=False)
+    provider_id = db.Column(db.Integer, db.ForeignKey('base_providers.id'), nullable=False)
+    created_by = db.Column(db.Integer, db.ForeignKey('base_users.id'), nullable=False)
 
     # Relationships
-    product = relationship("Product", lazy="select")
-    provider = relationship("Provider", lazy="select")
-    user = relationship("User", lazy="select", back_populates="transactions")
+    product = relationship("Product", lazy="select", uselist=False)
+    provider = relationship("Provider", lazy="select", uselist=False)
+    user = relationship("User", lazy="select", back_populates="transactions", uselist=False)
