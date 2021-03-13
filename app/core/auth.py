@@ -1,4 +1,5 @@
 # Standard Imports
+from os import name
 from fastapi import Depends
 from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
@@ -70,7 +71,29 @@ def login(data: LoginData):
 
 # Route for test authentication
 from ..modules.users.schemas import UserResponse
+from ..modules.providers.models import Provider
+from ..modules.products.models import Product
+from ..modules.transactions.models import Transaction
+from sqlalchemy.orm import Session
 
 @route.get('/auth/protected', response_model=UserResponse)
-def test_authentication(user=Depends(manager)):
+def test_authentication(user: User=Depends(manager), db: Session = Depends(get_db)):
+
+    # provider = Provider(name="Teste Fornecedor", cnpj="00000000000000", created_by=user.id)
+    # provider = provider.insert(db)
+    
+    # product = Product(name="Teste Produto", size="10", inventory=1, created_by=user.id)
+    # product.providers.append(provider)
+    # product = product.insert(db)
+
+
+    provider: Provider = db.query(Provider).get(1)
+    product: Product = db.query(Product).get(1)
+    product.providers.append(provider)
+    product = product.insert(db)
+
+
+
+
+
     return user
