@@ -89,12 +89,12 @@ def test_authentication(user: User=Depends(manager), db: Session = Depends(get_d
     # product = product.insert(db)
 
 
-    provider: Provider = db.query(Provider).get(1)
-    product: Product = db.query(Product).get(1)
-    product.providers.append(provider)
-    image = ProductImage()
-    product.image.append(image)
-    product = product.insert(db)
+    # provider: Provider = db.query(Provider).get(1)
+    # product: Product = db.query(Product).get(1)
+    # product.providers.append(provider)
+    # image = ProductImage()
+    # product.image.append(image)
+    # product = product.insert(db)
 
 
 

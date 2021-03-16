@@ -16,6 +16,7 @@ class Transaction(BaseMixin, Base):
     type = db.Column(db.Enum(TransactionTypeEnum), nullable=False)
     description = db.Column(db.TEXT)
     quantity = db.Column(db.Integer, nullable=False)
+    # TODO: Adicionar um campo data para a transação
     
     # Foreign keys from Product, Provider and User
     product_id = db.Column(db.Integer, db.ForeignKey('base_products.id'), nullable=False)

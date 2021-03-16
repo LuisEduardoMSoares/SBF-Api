@@ -16,6 +16,7 @@ class Provider(BaseMixin, Base):
     cnpj = db.Column(db.String(14), nullable=False)
     phone_number = db.Column(db.String)
     email = db.Column(db.String)
+    # TODO: Adicionar campo de responsavel, que é o contato de atendimento
 
     # User Foreign key
     created_by = db.Column(db.Integer, db.ForeignKey('base_users.id'), nullable=False)
