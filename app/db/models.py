@@ -8,7 +8,7 @@ from app.modules.users.models import User
 from app.modules.providers.models import Provider
 
 # Products
-from app.modules.products.models import Product
+from app.modules.products.models import Product, ProductImage
 
 # Transactions
 from app.modules.transactions.models import Transaction

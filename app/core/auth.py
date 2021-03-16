@@ -72,7 +72,7 @@ def login(data: LoginData):
 # Route for test authentication
 from ..modules.users.schemas import UserResponse
 from ..modules.providers.models import Provider
-from ..modules.products.models import Product
+from ..modules.products.models import Product, ProductImage
 from ..modules.transactions.models import Transaction
 from sqlalchemy.orm import Session
 
@@ -83,6 +83,8 @@ def test_authentication(user: User=Depends(manager), db: Session = Depends(get_d
     # provider = provider.insert(db)
     
     # product = Product(name="Teste Produto", size="10", inventory=1, created_by=user.id)
+    # image = ProductImage()
+    # product.image.append(image)
     # product.providers.append(provider)
     # product = product.insert(db)
 
@@ -90,6 +92,8 @@ def test_authentication(user: User=Depends(manager), db: Session = Depends(get_d
     provider: Provider = db.query(Provider).get(1)
     product: Product = db.query(Product).get(1)
     product.providers.append(provider)
+    image = ProductImage()
+    product.image.append(image)
     product = product.insert(db)
 
 
