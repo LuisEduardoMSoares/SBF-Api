@@ -12,11 +12,11 @@ class Provider(BaseMixin, Base):
     __tablename__ = 'base_providers'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
     cnpj = db.Column(db.String(14), nullable=False)
-    phone_number = db.Column(db.String)
-    email = db.Column(db.String)
-    # TODO: Adicionar campo de responsavel, que é o contato de atendimento
+    phone_number = db.Column(db.String(20))
+    email = db.Column(db.String(120))
+    contact_name = db.Column(db.String(100))
 
     # User Foreign key
     created_by = db.Column(db.Integer, db.ForeignKey('base_users.id'), nullable=False)

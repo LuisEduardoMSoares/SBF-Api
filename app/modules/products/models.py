@@ -25,12 +25,10 @@ class Product(BaseMixin, Base):
     name = db.Column(db.String, nullable=False)
     size = db.Column(db.String, nullable=False)
     inventory = db.Column(db.Integer, nullable=False)
-    description = db.Column(db.TEXT)
     weight = db.Column(db.Float)
-    # TODO: Store directly in Base64 or create a support_image table with one2one relatitionship
-    # image = db.Column(db.String)
     
-    is_deleted = db.Column(db.Boolean, default=False) # To maintain consistency in the system, the current product must exists.
+    # To maintain consistency in the system, the current product must exists.
+    is_deleted = db.Column(db.Boolean, default=False)
 
     # User Foreign key
     created_by = db.Column(db.Integer, db.ForeignKey('base_users.id'), nullable=False)
