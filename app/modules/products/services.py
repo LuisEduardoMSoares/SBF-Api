@@ -2,94 +2,98 @@
 from typing import List
 from sqlalchemy.orm import Session
 
-# User Model and Schemas
-from .models import User
-from .schemas import UserCreate
-from .schemas import UserUpdate
-from .schemas import UserResponse
+# User Model
+from app.modules.users.models import User
+
+# Product Model and Schemas
+from .models import Product
+from .schemas import ProductCreate
+from .schemas import ProductUpdate
+from .schemas import ProductResponse
 
 
-class UserService:
-    async def fetch_all(self, db: Session) -> List[UserResponse]:
+class ProductService:
+    async def fetch_all(self, db: Session) -> List[ProductResponse]:
         """
-        Retrieve a list of users.
+        Retrieve a list of products.
 
         Args:
             db (Session): The database session.
 
         Returns:
-            List[UserResponse]: A List of users response models.
+            List[ProductResponse]: A List of products response models.
         """
-        users = db.query(User).all()
-        return users
+        products = db.query(Product).all()
+        return products
 
-    async def fetch(self, db: Session, id: int) -> UserResponse:
+    async def fetch(self, db: Session, id: int) -> ProductResponse:
         """
-        Retrieve one user.
+        Retrieve one product.
 
         Args:
             db (Session): The database session.
-            id (int): The user ID.
+            id (int): The product ID.
 
         Raises:
-            HTTPException: Raises 404 if user was not found.
+            HTTPException: Raises 404 if product was not found.
 
         Returns:
-            UserResponse: The user response model.
+            ProductResponse: The product response model.
         """
-        single_user = db.query(User).get(id)
-        return single_user
+        single_product = db.query(Product).get(id)
+        return single_product
 
-    async def create(self, db: Session, user: UserCreate) -> UserResponse:
+    async def create(self, db: Session, product: ProductCreate, user: User) -> ProductResponse:
         """
-        Creates an user.
+        Creates an product.
 
         Args:
             db (Session): The database session.
-            user (UserCreate): The user create model.
+            product (ProductCreate): The product create model.
 
         Returns:
-            UserResponse: The user response model.
+            ProductResponse: The product response model.
         """
-        user_create = User(**user.dict())
-        user_create.hash_password()
-        user = user_create.insert(db)
+        product_create = Product(**product.dict())
+        product_create.created_by = user.id
+        product = product_create.insert(db)
 
-        return UserResponse.from_orm(user)
+        return ProductResponse.from_orm(product)
 
-    async def update(self, db: Session, id: int, user: UserUpdate) -> UserResponse:
+    async def update(self, db: Session, id: int, product: ProductUpdate) -> ProductResponse:
         """
-        Edits an user by id.
+        Edits an product by id.
 
         Args:
             db (Session): The database session.
-            id (int): The user ID.
-            user (UserUpdate): The user update model.
+            id (int): The product ID.
+            product (ProductUpdate): The product update model.
 
         Returns:
-            UserResponse: The User Response model.
+            ProductResponse: The Product Response model.
         """        
-        original_user = db.query(User).get(id)
-        if not original_user:
+        original_product = db.query(Product).get(id)
+        if not original_product:
             return None
 
-        original_user.update(db, **user.dict(exclude_unset=True))
-        new_user = UserResponse.from_orm(original_user)
-        return new_user
+        original_product.update(db, **product.dict(exclude_unset=True))
+        new_product = ProductResponse.from_orm(original_product)
+        return new_product
 
-    async def delete(self, db: Session, id: int) -> UserResponse:
+    async def delete(self, db: Session, id: int) -> ProductResponse:
         """
-        Deletes an user by id.
+        Deletes an product by id.
 
         Args:
-            id (int): The user ID.
+            id (int): The product ID.
 
         Returns:
-            UserResponse: The User Response model.
+            ProductResponse: The Product Response model.
         """        
-        deleted_user = db.query(User).get(id)
-        if not deleted_user:
+        deleted_product = db.query(Product).get(id)
+        if not deleted_product:
             return None
 
-        deleted_user.delete(db)
-        return deleted_user
+        deleted_product.is_deleted = True
+        deleted_product.update(db, **deleted_product.__dict__)
+        return deleted_product

@@ -42,7 +42,7 @@ def load_user(username: str):
     db = next(get_db())
     user = db.query(User).filter(or_(
         User.email == username,
-        User.username == username
+        User.email == username
     )).first()
     return user
 
