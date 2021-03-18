@@ -5,7 +5,6 @@ from ...utils.helpers import BaseSchema, MetaDatetimeSchema
 class UserCreate(BaseSchema):
     first_name: str
     last_name: str
-    username: str
     email: str
     password: str
 
@@ -14,7 +13,6 @@ class UserCreate(BaseSchema):
             "example": {
                 "first_name": "Luis",
                 "last_name": "Eduardo",
-                "username": "dudu",
                 "email": "dudu@mail.com",
                 "password": "mysecretpassword"
             }
@@ -23,7 +21,6 @@ class UserCreate(BaseSchema):
 class UserUpdate(BaseSchema):
     first_name: Optional[str]
     last_name: Optional[str]
-    username: Optional[str]
     password: Optional[str]
 
     class Config:
@@ -31,7 +28,6 @@ class UserUpdate(BaseSchema):
             "example": {
                 "first_name": "Luis",
                 "last_name": "Eduardo",
-                "username": "dudu",
                 "password": "mysecretpassword"
             }
         }
@@ -40,7 +36,6 @@ class UserResponse(BaseSchema):
     id: int
     first_name: str
     last_name: str
-    username: str
     email: str
     metadatetime: MetaDatetimeSchema
 
@@ -50,7 +45,6 @@ class UserResponse(BaseSchema):
                 "id": 1,
                 "first_name": "Luis",
                 "last_name": "Eduardo",
-                "username": "dudu",
                 "email": "dudu@mail.com",
                 "metadatetime": {
                     "created_on": "2020-01-01T00:00:00.000001",

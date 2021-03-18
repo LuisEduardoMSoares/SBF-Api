@@ -2,94 +2,98 @@
 from typing import List
 from sqlalchemy.orm import Session
 
-# User Model and Schemas
-from .models import User
-from .schemas import UserCreate
-from .schemas import UserUpdate
-from .schemas import UserResponse
+# User Model
+from app.modules.users.models import User
+
+# Provider Model and Schemas
+from .models import Provider
+from .schemas import ProviderCreate
+from .schemas import ProviderUpdate
+from .schemas import ProviderResponse
 
 
-class UserService:
-    async def fetch_all(self, db: Session) -> List[UserResponse]:
+class ProviderService:
+    # async def fetch_all(self, db: Session) -> List[UserResponse]:
+    #     """
+    #     Retrieve a list of users.
+
+    #     Args:
+    #         db (Session): The database session.
+
+    #     Returns:
+    #         List[UserResponse]: A List of users response models.
+    #     """
+    #     users = db.query(User).all()
+    #     return users
+
+    # async def fetch(self, db: Session, id: int) -> UserResponse:
+    #     """
+    #     Retrieve one user.
+
+    #     Args:
+    #         db (Session): The database session.
+    #         id (int): The user ID.
+
+    #     Raises:
+    #         HTTPException: Raises 404 if user was not found.
+
+    #     Returns:
+    #         UserResponse: The user response model.
+    #     """
+    #     single_user = db.query(User).get(id)
+    #     return single_user
+
+    async def create(self, db: Session, user: User, provider: ProviderCreate) -> ProviderResponse:
         """
-        Retrieve a list of users.
+        Creates a provider.
 
         Args:
             db (Session): The database session.
+            user (User): The user model.
+            provider (ProviderCreate): The provider create model.
 
         Returns:
-            List[UserResponse]: A List of users response models.
+            ProviderResponse: The provider response model.
         """
-        users = db.query(User).all()
-        return users
+        provider_create = Provider(**provider.dict())
+        provider_create.created_by = user.id
+        provider = provider_create.insert(db)
 
-    async def fetch(self, db: Session, id: int) -> UserResponse:
-        """
-        Retrieve one user.
+        return ProviderResponse.from_orm(provider)
 
-        Args:
-            db (Session): The database session.
-            id (int): The user ID.
+    # async def update(self, db: Session, id: int, user: UserUpdate) -> UserResponse:
+    #     """
+    #     Edits an user by id.
 
-        Raises:
-            HTTPException: Raises 404 if user was not found.
+    #     Args:
+    #         db (Session): The database session.
+    #         id (int): The user ID.
+    #         user (UserUpdate): The user update model.
 
-        Returns:
-            UserResponse: The user response model.
-        """
-        single_user = db.query(User).get(id)
-        return single_user
+    #     Returns:
+    #         UserResponse: The User Response model.
+    #     """        
+    #     original_user = db.query(User).get(id)
+    #     if not original_user:
+    #         return None
 
-    async def create(self, db: Session, user: UserCreate) -> UserResponse:
-        """
-        Creates an user.
+    #     original_user.update(db, **user.dict(exclude_unset=True))
+    #     new_user = UserResponse.from_orm(original_user)
+    #     return new_user
 
-        Args:
-            db (Session): The database session.
-            user (UserCreate): The user create model.
+    # async def delete(self, db: Session, id: int) -> UserResponse:
+    #     """
+    #     Deletes an user by id.
 
-        Returns:
-            UserResponse: The user response model.
-        """
-        user_create = User(**user.dict())
-        user_create.hash_password()
-        user = user_create.insert(db)
+    #     Args:
+    #         id (int): The user ID.
 
-        return UserResponse.from_orm(user)
+    #     Returns:
+    #         UserResponse: The User Response model.
+    #     """        
+    #     deleted_user = db.query(User).get(id)
+    #     if not deleted_user:
+    #         return None
 
-    async def update(self, db: Session, id: int, user: UserUpdate) -> UserResponse:
-        """
-        Edits an user by id.
-
-        Args:
-            db (Session): The database session.
-            id (int): The user ID.
-            user (UserUpdate): The user update model.
-
-        Returns:
-            UserResponse: The User Response model.
-        """        
-        original_user = db.query(User).get(id)
-        if not original_user:
-            return None
-
-        original_user.update(db, **user.dict(exclude_unset=True))
-        new_user = UserResponse.from_orm(original_user)
-        return new_user
-
-    async def delete(self, db: Session, id: int) -> UserResponse:
-        """
-        Deletes an user by id.
-
-        Args:
-            id (int): The user ID.
-
-        Returns:
-            UserResponse: The User Response model.
-        """        
-        deleted_user = db.query(User).get(id)
-        if not deleted_user:
-            return None
-
-        deleted_user.delete(db)
-        return deleted_user
+    #     deleted_user.delete(db)
+    #     return deleted_user

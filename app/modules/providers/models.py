@@ -13,7 +13,7 @@ class Provider(BaseMixin, Base):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    cnpj = db.Column(db.String(14), nullable=False)
+    cnpj = db.Column(db.String(14), nullable=False, unique=True)
     phone_number = db.Column(db.String(20))
     email = db.Column(db.String(120))
     contact_name = db.Column(db.String(100))

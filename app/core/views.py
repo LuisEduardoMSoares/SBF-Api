@@ -14,6 +14,9 @@ from app.routes import route as core_router
 # Import Project Info Routes
 from app.modules.users.routes import route as user_router
 
+# Import Provider Routes
+from app.modules.providers.routes import route as provider_router
+
 
 
 def create_routes(app: FastAPI) -> None:
@@ -28,3 +31,6 @@ def create_routes(app: FastAPI) -> None:
 
     # Include Project Info Router
     app.include_router(user_router, tags=['Users'], prefix=API_PREFIX)
+
+    # Include Provider Router
+    app.include_router(provider_router, tags=['Providers'], prefix=API_PREFIX)
