@@ -17,6 +17,9 @@ class Provider(BaseMixin, Base):
     phone_number = db.Column(db.String(20))
     email = db.Column(db.String(120))
     contact_name = db.Column(db.String(100))
+    
+    # To maintain consistency in the system, the current product must exists.
+    is_deleted = db.Column(db.Boolean, default=False)
 
     # User Foreign key
     created_by = db.Column(db.Integer, db.ForeignKey('base_users.id'), nullable=False)

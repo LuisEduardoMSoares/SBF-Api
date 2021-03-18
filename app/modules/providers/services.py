@@ -1,3 +1,6 @@
+# Standard Imports
+from sqlalchemy import and_
+
 # Typing Imports
 from typing import List
 from sqlalchemy.orm import Session
@@ -13,35 +16,37 @@ from .schemas import ProviderResponse
 
 
 class ProviderService:
-    # async def fetch_all(self, db: Session) -> List[UserResponse]:
-    #     """
-    #     Retrieve a list of users.
+    async def fetch_all(self, db: Session) -> List[ProviderResponse]:
+        """
+        Retrieve a list of providers.
 
-    #     Args:
-    #         db (Session): The database session.
+        Args:
+            db (Session): The database session.
 
-    #     Returns:
-    #         List[UserResponse]: A List of users response models.
-    #     """
-    #     users = db.query(User).all()
-    #     return users
+        Returns:
+            List[ProviderResponse]: A List of providers response models.
+        """
+        providers = db.query(Provider).filter(
+            Provider.is_deleted==False
+        ).all()
+        return providers
 
-    # async def fetch(self, db: Session, id: int) -> UserResponse:
-    #     """
-    #     Retrieve one user.
+    async def fetch(self, db: Session, id: int) -> ProviderResponse:
+        """
+        Retrieve one provider.
 
-    #     Args:
-    #         db (Session): The database session.
-    #         id (int): The user ID.
+        Args:
+            db (Session): The database session.
+            id (int): The provider ID.
 
-    #     Raises:
-    #         HTTPException: Raises 404 if user was not found.
-
-    #     Returns:
-    #         UserResponse: The user response model.
-    #     """
-    #     single_user = db.query(User).get(id)
-    #     return single_user
+        Returns:
+            ProviderResponse: The provider response model.
+        """
+        provider = db.query(Provider).filter(and_(
+            Provider.id == id,
+            Provider.is_deleted == False
+        )).first()
+        return provider
 
     async def create(self, db: Session, user: User, provider: ProviderCreate) -> ProviderResponse:
         """
@@ -61,39 +66,47 @@ class ProviderService:
 
         return ProviderResponse.from_orm(provider)
 
-    # async def update(self, db: Session, id: int, user: UserUpdate) -> UserResponse:
-    #     """
-    #     Edits an user by id.
+    async def update(self, db: Session, id: int, provider: ProviderUpdate) -> ProviderResponse:
+        """
+        Edits a provider by id.
 
-    #     Args:
-    #         db (Session): The database session.
-    #         id (int): The user ID.
-    #         user (UserUpdate): The user update model.
+        Args:
+            db (Session): The database session.
+            id (int): The provider ID.
+            provider (ProviderUpdate): The provider update model.
 
-    #     Returns:
-    #         UserResponse: The User Response model.
-    #     """        
-    #     original_user = db.query(User).get(id)
-    #     if not original_user:
-    #         return None
+        Returns:
+            ProviderResponse: The provider response model.
+        """
+        original_provider = db.query(Provider).filter(and_(
+            Provider.id == id,
+            Provider.is_deleted == False
+        )).first()
+        if not original_provider:
+            return None
 
-    #     original_user.update(db, **user.dict(exclude_unset=True))
-    #     new_user = UserResponse.from_orm(original_user)
-    #     return new_user
+        original_provider.update(db, **provider.dict(exclude_unset=True))
+        updated_provider = ProviderResponse.from_orm(original_provider)
+        return updated_provider
 
-    # async def delete(self, db: Session, id: int) -> UserResponse:
-    #     """
-    #     Deletes an user by id.
+    async def delete(self, db: Session, id: int) -> ProviderResponse:
+        """
+        Deletes a provider by id.
 
-    #     Args:
-    #         id (int): The user ID.
+        Args:
+            id (int): The provider ID.
 
-    #     Returns:
-    #         UserResponse: The User Response model.
-    #     """        
-    #     deleted_user = db.query(User).get(id)
-    #     if not deleted_user:
-    #         return None
+        Returns:
+            ProviderResponse: The provider response model.
+        """
+        original_provider = db.query(Provider).filter(and_(
+            Provider.id == id,
+            Provider.is_deleted == False
+        )).first()
+        if not original_provider:
+            return None
 
-    #     deleted_user.delete(db)
-    #     return deleted_user
+        original_provider.is_deleted = True
+        original_provider.update(db)
+        disable_provider = ProviderResponse.from_orm(original_provider)
+        return disable_provider
