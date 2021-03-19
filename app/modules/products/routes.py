@@ -30,10 +30,10 @@ product_service = ProductService()
 @route.get("/products/", response_model=List[ProductResponse])
 async def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Retrieve a list of products.
+    ## Retrieve a list of products.
 
-    Returns:
-        List[ProductResponse]: A List of products response models.
+    ### Returns:
+        >  List[ProductResponse]: A List of products response models.
     """
     products = await product_service.fetch_all(db)
     return products
@@ -42,16 +42,16 @@ async def get_all_products(db: Session = Depends(get_db), user: User=Depends(man
 @route.get("/products/{id}", response_model=ProductResponse)
 async def get_one_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Retrieve one product.
+    ## Retrieve one product.
 
-    Args:
-        id (int): The product ID.
+    ### Args:
+        >  id (int): The product ID.
 
-    Raises:
-        HTTPException: Raises 404 if product was not found.
+    ### Raises:
+        >  HTTPException: Raises 404 if product was not found.
 
-    Returns:
-        ProductResponse: The product response model.
+    ### Returns:
+        >  ProductResponse: The product response model.
     """
     product = await product_service.fetch(db, id)
     if not product:
@@ -62,13 +62,13 @@ async def get_one_product(id: int, db: Session = Depends(get_db), user: User=Dep
 @route.post("/products/", response_model=ProductResponse)
 async def create_product(product: ProductCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Creates an product.
+    ## Creates an product.
 
-    Args:
-        product (ProductCreate): The product update model.
+    ### Args:
+        >  product (ProductCreate): The product update model.
 
-    Returns:
-        ProductResponse: The product response model.
+    ### Returns:
+        >  ProductResponse: The product response model.
     """
     product = await product_service.create(db, product, user)
     return product
@@ -77,17 +77,17 @@ async def create_product(product: ProductCreate, db: Session = Depends(get_db), 
 @route.patch("/products/{id}", response_model=ProductResponse)
 async def update_product(id: int, product: ProductUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Edits an product by id.
+    ## Edits an product by id.
 
-    Args:
-        id (int): The product ID.
-        product (ProductUpdate): The product update model.
+    ### Args:
+        >  id (int): The product ID.
+        >  product (ProductUpdate): The product update model.
 
-    Raises:
-        HTTPException: Raises 404 if product was not found.
+    ### Raises:
+        >  HTTPException: Raises 404 if product was not found.
 
-    Returns:
-        ProductResponse: The product response model.
+    ### Returns:
+        >  ProductResponse: The product response model.
     """
     product = await product_service.update(db, id, product)
     if not product:
@@ -98,16 +98,16 @@ async def update_product(id: int, product: ProductUpdate, db: Session = Depends(
 @route.delete("/products/{id}", response_model=ProductResponse)
 async def delete_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Deletes an product by id.
+    ## Deletes an product by id.
 
-    Args:
-        id (int): The product ID.
+    ### Args:
+        >  id (int): The product ID.
 
-    Raises:
-        HTTPException: Raises 404 if product was not found.
+    ### Raises:
+        >  HTTPException: Raises 404 if product was not found.
 
-    Returns:
-        ProductResponse: The product response model.
+    ### Returns:
+        >  ProductResponse: The product response model.
     """
     product = await product_service.delete(db, id)
     if not product:

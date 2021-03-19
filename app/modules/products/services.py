@@ -23,7 +23,9 @@ class ProductService:
         Returns:
             List[ProductResponse]: A List of products response models.
         """
-        products = db.query(Product).all()
+        products = db.query(Product).filter(
+            Product.is_deleted==False
+        ).all()
         return products
 
     async def fetch(self, db: Session, id: int) -> ProductResponse:
@@ -95,5 +97,5 @@ class ProductService:
             return None
 
         deleted_product.is_deleted = True
-        deleted_product.update(db, **deleted_product.__dict__)
+        deleted_product.update(db)
         return deleted_product
