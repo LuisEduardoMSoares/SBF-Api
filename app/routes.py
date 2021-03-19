@@ -22,12 +22,12 @@ def health_check():
 
 
 @route.get("/create-all")
-def health_check():
+def create_all_tables():
     create_all()
     return {"message": "All tables created."}
 
 
 @route.get("/drop-all")
-def health_check():
+def drop_all_content_on_database():
     drop_all()
     return {"message": "Database dropped."}

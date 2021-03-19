@@ -31,10 +31,10 @@ provider_service = ProviderService()
 @route.get("/providers/", response_model=List[ProviderResponse])
 async def get_all_providers(db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Retrieve a list of providers.
+    ## Retrieve a list of providers.
 
-    Returns:
-        List[ProviderResponse]: A List of providers response models.
+    ### Returns:  
+      >  List[ProviderResponse]: A List of providers response models.
     """
     providers = await provider_service.fetch_all(db)
     return providers
@@ -43,16 +43,16 @@ async def get_all_providers(db: Session = Depends(get_db), user: User=Depends(ma
 @route.get("/providers/{id}", response_model=ProviderResponse)
 async def get_one_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Retrieve one provider.
+    ## Retrieve one provider.
 
-    Args:
-        id (int): The provider ID.
+    ### Args:  
+      >  id (int): The provider ID.
 
-    Raises:
-        HTTPException: Raises 404 if provider was not found.
+    ### Raises:  
+      >  HTTPException: Raises 404 if provider was not found.
 
-    Returns:
-        ProviderResponse: The provider response model.
+    ### Returns:  
+      >  ProviderResponse: The provider response model.
     """
     provider = await provider_service.fetch(db, id)
     if not provider:
@@ -63,13 +63,13 @@ async def get_one_provider(id: int, db: Session = Depends(get_db), user: User=De
 @route.post("/providers/", status_code=201, response_model=ProviderResponse)
 async def create_provider(provider: ProviderCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Creates a provider.
+    ## Creates a provider.
 
-    Args:
-        provider (ProviderCreate): The provider create model.
+    ### Args:  
+      >  provider (ProviderCreate): The provider create model.
 
-    Returns:
-        ProviderResponse: The provider response model.
+    ### Returns:  
+      >  ProviderResponse: The provider response model.
     """
     try:
         provider = await provider_service.create(db, user, provider)
@@ -82,17 +82,17 @@ async def create_provider(provider: ProviderCreate, db: Session = Depends(get_db
 @route.patch("/providers/{id}", response_model=ProviderResponse)
 async def update_provider(id: int, provider: ProviderUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Edits a provider by id.
+    ## Edits a provider by id.
 
-    Args:
-        id (int): The provider ID.
-        provider (ProviderUpdate): The provider update model.
+    ### Args:  
+      >  id (int): The provider ID.  
+      >  provider (ProviderUpdate): The provider update model.
 
-    Raises:
-        HTTPException: Raises 404 if provider was not found.
+    ### Raises:  
+      >  HTTPException: Raises 404 if provider was not found.
 
-    Returns:
-        ProviderResponse: The provider response model.
+    ### Returns:  
+      >  ProviderResponse: The provider response model.
     """
     provider = await provider_service.update(db, id, provider)
     if not provider:
@@ -103,16 +103,16 @@ async def update_provider(id: int, provider: ProviderUpdate, db: Session = Depen
 @route.delete("/providers/{id}", response_model=ProviderResponse)
 async def delete_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    Deletes a provider by id.
+    ## Deletes a provider by id.
 
-    Args:
-        id (int): The provider ID.
+    ### Args:  
+      >  id (int): The provider ID.
 
-    Raises:
-        HTTPException: Raises 404 if provider was not found.
+    ### Raises:  
+      >  HTTPException: Raises 404 if provider was not found.
 
-    Returns:
-        UserResponse: The user response model.
+    ### Returns:  
+      >  UserResponse: The user response model.
     """
     provider = await provider_service.delete(db, id)
     if not provider:

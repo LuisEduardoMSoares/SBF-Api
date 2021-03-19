@@ -26,10 +26,10 @@ user_service = UserService()
 @route.get("/users/", response_model=List[UserResponse])
 async def get_all_users(db: Session = Depends(get_db)):
     """
-    Retrieve a list of users.
+    ## Retrieve a list of users.
 
-    Returns:
-        List[UserResponse]: A List of users response models.
+    ### Returns:  
+      >  List[UserResponse]: A List of users response models.
     """
     users = await user_service.fetch_all(db)
     return users
@@ -38,16 +38,16 @@ async def get_all_users(db: Session = Depends(get_db)):
 @route.get("/users/{id}", response_model=UserResponse)
 async def get_one_user(id: int, db: Session = Depends(get_db)):
     """
-    Retrieve one user.
+    ## Retrieve one user.
 
-    Args:
-        id (int): The user ID.
+    ### Args:  
+      >  id (int): The user ID.
 
-    Raises:
-        HTTPException: Raises 404 if user was not found.
+    ### Raises:  
+      >  HTTPException: Raises 404 if user was not found.
 
-    Returns:
-        UserResponse: The user response model.
+    ### Returns:  
+      >  UserResponse: The user response model.
     """
     user = await user_service.fetch(db, id)
     if not user:
@@ -58,13 +58,13 @@ async def get_one_user(id: int, db: Session = Depends(get_db)):
 @route.post("/users/", response_model=UserResponse)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     """
-    Creates an user.
+    ## Creates an user.
 
-    Args:
-        user (UserCreate): The user update model.
+    ### Args:  
+      >  user (UserCreate): The user update model.
 
-    Returns:
-        UserResponse: The user response model.
+    ### Returns:  
+      >  UserResponse: The user response model.
     """
     user = await user_service.create(db, user)
     return user
@@ -73,17 +73,17 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
 @route.patch("/users/{id}", response_model=UserResponse)
 async def update_user(id: int, user: UserUpdate, db: Session = Depends(get_db)):
     """
-    Edits an user by id.
+    ## Edits an user by id.
 
-    Args:
-        id (int): The user ID.
-        user (UserUpdate): The user update model.
+    ### Args:  
+      >  id (int): The user ID.  
+      >  user (UserUpdate): The user update model.
 
-    Raises:
-        HTTPException: Raises 404 if user was not found.
+    ### Raises:  
+      >  HTTPException: Raises 404 if user was not found.
 
-    Returns:
-        UserResponse: The user response model.
+    ### Returns:  
+      >  UserResponse: The user response model.
     """
     user = await user_service.update(db, id, user)
     if not user:
@@ -94,16 +94,16 @@ async def update_user(id: int, user: UserUpdate, db: Session = Depends(get_db)):
 @route.delete("/users/{id}", response_model=UserResponse)
 async def delete_user(id: int, db: Session = Depends(get_db)):
     """
-    Deletes an user by id.
+    ## Deletes an user by id.
 
-    Args:
-        id (int): The user ID.
+    ### Args:  
+      >  id (int): The user ID.
 
-    Raises:
-        HTTPException: Raises 404 if user was not found.
+    ### Raises:  
+      >  HTTPException: Raises 404 if user was not found.
 
-    Returns:
-        UserResponse: The user response model.
+    ### Returns:  
+      >  UserResponse: The user response model.
     """
     user = await user_service.delete(db, id)
     if not user:
