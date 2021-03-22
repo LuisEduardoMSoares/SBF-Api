@@ -29,19 +29,19 @@ provider_service = ProviderService()
 
 
 @route.get("/providers/", response_model=List[ProviderResponse])
-async def get_all_providers(db: Session = Depends(get_db), user: User=Depends(manager)):
+def get_all_providers(db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Retrieve a list of providers.
 
     ### Returns:  
       >  List[ProviderResponse]: A List of providers response models.
     """
-    providers = await provider_service.fetch_all(db)
+    providers = provider_service.fetch_all(db)
     return providers
 
 
 @route.get("/providers/{id}", response_model=ProviderResponse)
-async def get_one_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+def get_one_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Retrieve one provider.
 
@@ -54,14 +54,14 @@ async def get_one_provider(id: int, db: Session = Depends(get_db), user: User=De
     ### Returns:  
       >  ProviderResponse: The provider response model.
     """
-    provider = await provider_service.fetch(db, id)
+    provider = provider_service.fetch(db, id)
     if not provider:
         raise HTTPException(status_code=404, detail=f"Fornecedor de id {id} não foi encontrado.")
     return provider
 
 
 @route.post("/providers/", status_code=201, response_model=ProviderResponse)
-async def create_provider(provider: ProviderCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def create_provider(provider: ProviderCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Creates a provider.
 
@@ -72,7 +72,7 @@ async def create_provider(provider: ProviderCreate, db: Session = Depends(get_db
       >  ProviderResponse: The provider response model.
     """
     try:
-        provider = await provider_service.create(db, user, provider)
+        provider = provider_service.create(db, user, provider)
         return provider
     except IntegrityError as err:
         if "base_providers_cnpj_key" in repr(err):
@@ -80,7 +80,7 @@ async def create_provider(provider: ProviderCreate, db: Session = Depends(get_db
 
 
 @route.patch("/providers/{id}", response_model=ProviderResponse)
-async def update_provider(id: int, provider: ProviderUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def update_provider(id: int, provider: ProviderUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Edits a provider by id.
 
@@ -94,14 +94,14 @@ async def update_provider(id: int, provider: ProviderUpdate, db: Session = Depen
     ### Returns:  
       >  ProviderResponse: The provider response model.
     """
-    provider = await provider_service.update(db, id, provider)
+    provider = provider_service.update(db, id, provider)
     if not provider:
         raise HTTPException(status_code=404, detail=f"Fornecedor de id {id} não foi encontrado.")
     return provider
 
 
 @route.delete("/providers/{id}", response_model=ProviderResponse)
-async def delete_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+def delete_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Deletes a provider by id.
 
@@ -114,7 +114,7 @@ async def delete_provider(id: int, db: Session = Depends(get_db), user: User=Dep
     ### Returns:  
       >  UserResponse: The user response model.
     """
-    provider = await provider_service.delete(db, id)
+    provider = provider_service.delete(db, id)
     if not provider:
         raise HTTPException(status_code=404, detail=f"Fornecedor de id {id} não foi encontrado.")
     return provider

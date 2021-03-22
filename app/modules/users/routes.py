@@ -24,19 +24,19 @@ user_service = UserService()
 
 
 @route.get("/users/", response_model=List[UserResponse])
-async def get_all_users(db: Session = Depends(get_db)):
+def get_all_users(db: Session = Depends(get_db)):
     """
     ## Retrieve a list of users.
 
     ### Returns:  
       >  List[UserResponse]: A List of users response models.
     """
-    users = await user_service.fetch_all(db)
+    users = user_service.fetch_all(db)
     return users
 
 
 @route.get("/users/{id}", response_model=UserResponse)
-async def get_one_user(id: int, db: Session = Depends(get_db)):
+def get_one_user(id: int, db: Session = Depends(get_db)):
     """
     ## Retrieve one user.
 
@@ -49,14 +49,14 @@ async def get_one_user(id: int, db: Session = Depends(get_db)):
     ### Returns:  
       >  UserResponse: The user response model.
     """
-    user = await user_service.fetch(db, id)
+    user = user_service.fetch(db, id)
     if not user:
         raise HTTPException(status_code=404, detail="User was not found.")
     return user
 
 
 @route.post("/users/", response_model=UserResponse)
-async def create_user(user: UserCreate, db: Session = Depends(get_db)):
+def create_user(user: UserCreate, db: Session = Depends(get_db)):
     """
     ## Creates an user.
 
@@ -66,12 +66,12 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     ### Returns:  
       >  UserResponse: The user response model.
     """
-    user = await user_service.create(db, user)
+    user = user_service.create(db, user)
     return user
 
 
 @route.patch("/users/{id}", response_model=UserResponse)
-async def update_user(id: int, user: UserUpdate, db: Session = Depends(get_db)):
+def update_user(id: int, user: UserUpdate, db: Session = Depends(get_db)):
     """
     ## Edits an user by id.
 
@@ -85,14 +85,14 @@ async def update_user(id: int, user: UserUpdate, db: Session = Depends(get_db)):
     ### Returns:  
       >  UserResponse: The user response model.
     """
-    user = await user_service.update(db, id, user)
+    user = user_service.update(db, id, user)
     if not user:
         raise HTTPException(status_code=404, detail="User was not found.")
     return user
 
 
 @route.delete("/users/{id}", response_model=UserResponse)
-async def delete_user(id: int, db: Session = Depends(get_db)):
+def delete_user(id: int, db: Session = Depends(get_db)):
     """
     ## Deletes an user by id.
 
@@ -105,7 +105,7 @@ async def delete_user(id: int, db: Session = Depends(get_db)):
     ### Returns:  
       >  UserResponse: The user response model.
     """
-    user = await user_service.delete(db, id)
+    user = user_service.delete(db, id)
     if not user:
         raise HTTPException(status_code=404, detail="User was not found.")
     return user

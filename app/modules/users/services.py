@@ -10,7 +10,7 @@ from .schemas import UserResponse
 
 
 class UserService:
-    async def fetch_all(self, db: Session) -> List[UserResponse]:
+    def fetch_all(self, db: Session) -> List[UserResponse]:
         """
         Retrieve a list of users.
 
@@ -23,7 +23,7 @@ class UserService:
         users = db.query(User).all()
         return users
 
-    async def fetch(self, db: Session, id: int) -> UserResponse:
+    def fetch(self, db: Session, id: int) -> UserResponse:
         """
         Retrieve one user.
 
@@ -40,7 +40,7 @@ class UserService:
         single_user = db.query(User).get(id)
         return single_user
 
-    async def create(self, db: Session, user: UserCreate) -> UserResponse:
+    def create(self, db: Session, user: UserCreate) -> UserResponse:
         """
         Creates an user.
 
@@ -57,7 +57,7 @@ class UserService:
 
         return UserResponse.from_orm(user)
 
-    async def update(self, db: Session, id: int, user: UserUpdate) -> UserResponse:
+    def update(self, db: Session, id: int, user: UserUpdate) -> UserResponse:
         """
         Edits an user by id.
 
@@ -81,7 +81,7 @@ class UserService:
         new_user = UserResponse.from_orm(original_user)
         return new_user
 
-    async def delete(self, db: Session, id: int) -> UserResponse:
+    def delete(self, db: Session, id: int) -> UserResponse:
         """
         Deletes an user by id.
 

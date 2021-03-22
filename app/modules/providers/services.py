@@ -16,7 +16,7 @@ from .schemas import ProviderResponse
 
 
 class ProviderService:
-    async def fetch_all(self, db: Session) -> List[ProviderResponse]:
+    def fetch_all(self, db: Session) -> List[ProviderResponse]:
         """
         Retrieve a list of providers.
 
@@ -31,7 +31,7 @@ class ProviderService:
         ).all()
         return providers
 
-    async def fetch(self, db: Session, id: int) -> ProviderResponse:
+    def fetch(self, db: Session, id: int) -> ProviderResponse:
         """
         Retrieve one provider.
 
@@ -48,7 +48,7 @@ class ProviderService:
         )).first()
         return provider
 
-    async def create(self, db: Session, user: User, provider: ProviderCreate) -> ProviderResponse:
+    def create(self, db: Session, user: User, provider: ProviderCreate) -> ProviderResponse:
         """
         Creates a provider.
 
@@ -66,7 +66,7 @@ class ProviderService:
 
         return ProviderResponse.from_orm(provider)
 
-    async def update(self, db: Session, id: int, provider: ProviderUpdate) -> ProviderResponse:
+    def update(self, db: Session, id: int, provider: ProviderUpdate) -> ProviderResponse:
         """
         Edits a provider by id.
 
@@ -89,7 +89,7 @@ class ProviderService:
         updated_provider = ProviderResponse.from_orm(original_provider)
         return updated_provider
 
-    async def delete(self, db: Session, id: int) -> ProviderResponse:
+    def delete(self, db: Session, id: int) -> ProviderResponse:
         """
         Deletes a provider by id.
 
