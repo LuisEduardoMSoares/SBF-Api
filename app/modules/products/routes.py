@@ -62,7 +62,7 @@ async def get_one_product(id: int, db: Session = Depends(get_db), user: User=Dep
 @route.post("/products/", response_model=ProductResponse)
 async def create_product(product: ProductCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    ## Creates an product.
+    ## Creates a product.
 
     ### Args:  
       >  product (ProductCreate): The product update model.
@@ -77,7 +77,7 @@ async def create_product(product: ProductCreate, db: Session = Depends(get_db), 
 @route.patch("/products/{id}", response_model=ProductResponse)
 async def update_product(id: int, product: ProductUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    ## Edits an product by id.
+    ## Edits a product by id.
 
     ### Args:  
       >  id (int): The product ID.  
@@ -98,7 +98,7 @@ async def update_product(id: int, product: ProductUpdate, db: Session = Depends(
 @route.delete("/products/{id}", response_model=ProductResponse)
 async def delete_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    ## Deletes an product by id.
+    ## Deletes a product by id.
 
     ### Args:  
       >  id (int): The product ID.

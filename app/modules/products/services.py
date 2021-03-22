@@ -1,3 +1,6 @@
+# Standard Import
+from sqlalchemy import and_
+
 # Typing Imports
 from typing import List
 from sqlalchemy.orm import Session
@@ -24,7 +27,7 @@ class ProductService:
             List[ProductResponse]: A List of products response models.
         """
         products = db.query(Product).filter(
-            Product.is_deleted==False
+            Product.is_deleted == False
         ).all()
         return products
 
@@ -42,12 +45,15 @@ class ProductService:
         Returns:
             ProductResponse: The product response model.
         """
-        single_product = db.query(Product).get(id)
+        single_product = db.query(Product).filter(and_(
+            Product.id == id,
+            Product.is_deleted == False
+        )).first()
         return single_product
 
     async def create(self, db: Session, product: ProductCreate, user: User) -> ProductResponse:
         """
-        Creates an product.
+        Creates a product.
 
         Args:
             db (Session): The database session.
@@ -64,7 +70,7 @@ class ProductService:
 
     async def update(self, db: Session, id: int, product: ProductUpdate) -> ProductResponse:
         """
-        Edits an product by id.
+        Edits a product by id.
 
         Args:
             db (Session): The database session.
@@ -74,7 +80,10 @@ class ProductService:
         Returns:
             ProductResponse: The Product Response model.
         """        
-        original_product = db.query(Product).get(id)
+        original_product = db.query(Product).filter(and_(
+            Product.id == id,
+            Product.is_deleted == False
+        )).first()
         if not original_product:
             return None
 
@@ -84,7 +93,7 @@ class ProductService:
 
     async def delete(self, db: Session, id: int) -> ProductResponse:
         """
-        Deletes an product by id.
+        Deletes a product by id.
 
         Args:
             id (int): The product ID.
@@ -92,7 +101,10 @@ class ProductService:
         Returns:
             ProductResponse: The Product Response model.
         """        
-        deleted_product = db.query(Product).get(id)
+        deleted_product = db.query(Product).filter(and_(
+            Product.id == id,
+            Product.is_deleted == False
+        )).first()
         if not deleted_product:
             return None
 

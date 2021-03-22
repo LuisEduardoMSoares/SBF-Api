@@ -7,7 +7,6 @@ class ProductCreate(BaseSchema):
     size: str
     inventory: int
     weight: float
-    is_deleted: bool
 
     class Config:
         schema_extra = {
@@ -15,8 +14,7 @@ class ProductCreate(BaseSchema):
                 "name": "Camisa Azul",
                 "size": "P",
                 "inventory": 10,
-                "weight": 10.5,
-                "is_deleted": False
+                "weight": 10.5
             }
         }
     
@@ -25,7 +23,6 @@ class ProductUpdate(BaseSchema):
     size: Optional[str]
     inventory: Optional[int]
     weight: Optional[float]
-    is_deleted: Optional[bool]
 
     class Config:
         schema_extra = {
@@ -33,8 +30,7 @@ class ProductUpdate(BaseSchema):
                 "name": "Camisa Azul",
                 "size": "P",
                 "inventory": 10,
-                "weight": 10.5,
-                "is_deleted": False,
+                "weight": 10.5
             }
         }
 
@@ -44,8 +40,6 @@ class ProductResponse(BaseSchema):
     size: str
     inventory: int
     weight: float
-    is_deleted: bool
-    created_by: int
     metadatetime: MetaDatetimeSchema
 
     class Config:
@@ -56,8 +50,6 @@ class ProductResponse(BaseSchema):
                 "size": "P",
                 "inventory": 10,
                 "weight": 10.5,
-                "is_deleted": False,
-                "created_by": 1,
                 "metadatetime": {
                     "created_on": "2020-01-01T00:00:00.000001",
                     "updated_on": "2020-01-01T00:00:00.000001"
