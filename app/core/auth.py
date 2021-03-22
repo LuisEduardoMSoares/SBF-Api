@@ -32,7 +32,7 @@ class LoginData(BaseSchema):
     class Config:
         schema_extra = {
             "example": {
-                "username": "dudu@mail.com",
+                "username": "fulano@sbf.com",
                 "password": "mysecretpassword"
             }
         }
@@ -70,10 +70,6 @@ def login(data: LoginData):
 
 # Route for test authentication
 from ..modules.users.schemas import UserResponse
-from ..modules.providers.models import Provider
-from ..modules.products.models import Product, ProductImage
-from ..modules.transactions.models import Transaction
-from sqlalchemy.orm import Session
 
 @route.get('/auth/protected', response_model=UserResponse)
 def test_authentication(user: User=Depends(manager)):

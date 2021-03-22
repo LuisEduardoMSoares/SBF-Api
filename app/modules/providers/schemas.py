@@ -13,10 +13,10 @@ class ProviderCreate(BaseSchema):
     class Config:
         schema_extra = {
             "example": {
-                "name": "EmpresaX",
+                "name": "FornecedorA",
                 "cnpj": "00000000000000",
-                "phone_number": "dudu",
-                "email": "fornecedor@teste.com",
+                "phone_number": "00111115555",
+                "email": "fornecedor@sbf.com",
                 "contact_name": "Ciclano"
             }
         }
@@ -31,10 +31,10 @@ class ProviderUpdate(BaseSchema):
     class Config:
         schema_extra = {
             "example": {
-                "name": "EmpresaX",
+                "name": "FornecedorA",
                 "cnpj": "00000000000000",
-                "phone_number": "dudu",
-                "email": "fornecedor@teste.com",
+                "phone_number": "00111115555",
+                "email": "fornecedor@sbf.com",
                 "contact_name": "Ciclano"
             }
         }
@@ -52,10 +52,10 @@ class ProviderResponse(BaseSchema):
         schema_extra = {
             "example": {
                 "id": 1,
-                "name": "EmpresaX",
+                "name": "FornecedorA",
                 "cnpj": "00000000000000",
-                "phone_number": "dudu",
-                "email": "fornecedor@teste.com",
+                "phone_number": "00111115555",
+                "email": "fornecedor@sbf.com",
                 "contact_name": "Ciclano"
             }
         }

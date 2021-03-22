@@ -73,6 +73,10 @@ class UserService:
         if not original_user:
             return None
 
+        if user.password != None:
+            original_user.password = user.password
+            original_user.hash_password()
+            user.password = original_user.password
         original_user.update(db, **user.dict(exclude_unset=True))
         new_user = UserResponse.from_orm(original_user)
         return new_user

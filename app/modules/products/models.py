@@ -34,6 +34,6 @@ class Product(BaseMixin, Base):
     created_by = db.Column(db.Integer, db.ForeignKey('base_users.id'), nullable=False)
 
     # Relationships
-    image = relationship("ProductImage", lazy="joined", back_populates="product")
+    image = relationship("ProductImage", lazy="joined", back_populates="product", uselist=False)
     user = relationship("User", lazy="select", back_populates="products_created", uselist=False)
     providers = relationship("Provider", secondary=ProductProvider, back_populates="products")
