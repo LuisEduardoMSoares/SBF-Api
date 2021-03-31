@@ -1,6 +1,3 @@
-# Association Tables
-from app.modules.associations.models import ProductProvider
-
 # Users
 from app.modules.users.models import User
 

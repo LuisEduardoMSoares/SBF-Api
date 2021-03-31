@@ -6,8 +6,6 @@ from sqlalchemy.orm import relationship
 from ...db.engine import Base
 from ...db.base import BaseMixin
 
-from ..associations.models import ProductProvider
-
 
 class ProductImage(BaseMixin, Base):
     __tablename__ = 'support_products_image'
@@ -36,4 +34,3 @@ class Product(BaseMixin, Base):
     # Relationships
     image = relationship("ProductImage", lazy="joined", back_populates="product", uselist=False)
     user = relationship("User", lazy="select", back_populates="products_created", uselist=False)
-    providers = relationship("Provider", secondary=ProductProvider, back_populates="products")

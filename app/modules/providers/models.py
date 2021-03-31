@@ -5,8 +5,6 @@ from sqlalchemy.orm import relationship
 from ...db.engine import Base
 from ...db.base import BaseMixin
 
-from ..associations.models import ProductProvider
-
 
 class Provider(BaseMixin, Base):
     __tablename__ = 'base_providers'
@@ -26,4 +24,3 @@ class Provider(BaseMixin, Base):
 
     # Relationships
     user = relationship("User", lazy="select", back_populates="providers_created", uselist=False)
-    products = relationship("Product", secondary=ProductProvider, back_populates="providers")
