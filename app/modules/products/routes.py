@@ -2,12 +2,12 @@
 from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import Depends
-from sqlalchemy.orm import Session
 
 # Database Import
 from app.db.engine import get_db
 
 # Typing Imports
+from sqlalchemy.orm import Session
 from typing import Optional
 
 # Exception Imports
@@ -40,13 +40,13 @@ def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager),
     ## Retrieve a list of products.
 
     ### Args:  
-      >  id (int): The product ID.  
-      >  page (int): Page to fetch.  
-      >  per_page (int): Quantity of products per page.  
-      >  name (str): Product name to filter.
+        >  id (int): The product ID.  
+        >  page (int): Page to fetch.  
+        >  per_page (int): Quantity of products per page.  
+        >  name (str): Product name to filter.
 
     ### Returns:  
-      >  ProductsResponse: A dict with products records and pagination metadata.
+        >  ProductsResponse: A dict with products records and pagination metadata.
     """
     try:
         products = product_service.fetch_all(db, page, per_page, name)
@@ -64,13 +64,13 @@ def get_one_product(id: int, db: Session = Depends(get_db), user: User=Depends(m
     ## Retrieve one product.
 
     ### Args:  
-      >  id (int): The product ID.
+        >  id (int): The product ID.
 
     ### Raises:  
-      >  HTTPException: Raises 404 if product was not found.
+        >  HTTPException: Raises 404 if product was not found.
 
     ### Returns:  
-      >  ProductResponse: The product response model.
+        >  ProductResponse: The product response model.
     """
     product = product_service.fetch(db, id)
     if not product:
@@ -84,10 +84,10 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db), user: 
     ## Creates a product.
 
     ### Args:  
-      >  product (ProductCreate): The product update model.
+        >  product (ProductCreate): The product update model.
 
     ### Returns:  
-      >  ProductResponse: The product response model.
+        >  ProductResponse: The product response model.
     """
     product = product_service.create(db, product, user)
     return product
@@ -99,14 +99,14 @@ def update_product(id: int, product: ProductUpdate, db: Session = Depends(get_db
     ## Edits a product by id.
 
     ### Args:  
-      >  id (int): The product ID.  
-      >  product (ProductUpdate): The product update model.
+        >  id (int): The product ID.  
+        >  product (ProductUpdate): The product update model.
 
     ### Raises:  
-      >  HTTPException: Raises 404 if product was not found.
+        >  HTTPException: Raises 404 if product was not found.
 
     ### Returns:  
-      >  ProductResponse: The product response model.
+        >  ProductResponse: The product response model.
     """
     product = product_service.update(db, id, product)
     if not product:
@@ -120,13 +120,13 @@ def delete_product(id: int, db: Session = Depends(get_db), user: User=Depends(ma
     ## Deletes a product by id.
 
     ### Args:  
-      >  id (int): The product ID.
+        >  id (int): The product ID.
 
     ### Raises:  
-      >  HTTPException: Raises 404 if product was not found.
+        >  HTTPException: Raises 404 if product was not found.
 
     ### Returns:  
-      >  ProductResponse: The product response model.
+        >  ProductResponse: The product response model.
     """
     product = product_service.delete(db, id)
     if not product:

@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import List, Optional
 from pydantic import EmailStr
 from ...utils.helpers import BaseSchema, MetaDatetimeSchema
+from ...utils.pagination import PaginationMetadataSchema
 
 
 class ProviderCreate(BaseSchema):
@@ -59,3 +60,7 @@ class ProviderResponse(BaseSchema):
                 "contact_name": "Ciclano"
             }
         }
+
+class ProvidersResponse(BaseSchema):
+    pagination_metadata: Optional[PaginationMetadataSchema]
+    records: List[ProviderResponse]

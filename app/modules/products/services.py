@@ -1,5 +1,4 @@
 # Standard Import
-from pydantic.types import PositiveInt
 from sqlalchemy import and_, func
 from pydantic import parse_obj_as
 from sqlalchemy_filters import apply_pagination
@@ -7,6 +6,7 @@ from sqlalchemy_filters import apply_pagination
 # Typing Imports
 from typing import List
 from sqlalchemy.orm import Session
+from pydantic.types import PositiveInt
 
 # Exception Imports
 from sqlalchemy_filters.exceptions import InvalidPage

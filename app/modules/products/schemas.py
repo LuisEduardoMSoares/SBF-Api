@@ -60,4 +60,4 @@ class ProductResponse(BaseSchema):
 
 class ProductsResponse(BaseSchema):
     pagination_metadata: Optional[PaginationMetadataSchema]
-    records: List[Optional[ProductResponse]]
+    records: List[ProductResponse]
