@@ -29,7 +29,7 @@ def get_all_users(db: Session = Depends(get_db)):
     ## Retrieve a list of users.
 
     ### Returns:  
-        >  List[UserResponse]: A List of users response models.
+      >  List[UserResponse]: A List of users response models.
     """
     users = user_service.fetch_all(db)
     return users
@@ -41,13 +41,13 @@ def get_one_user(id: int, db: Session = Depends(get_db)):
     ## Retrieve one user.
 
     ### Args:  
-        >  id (int): The user ID.
+      >  id (int): The user ID.
 
     ### Raises:  
-        >  HTTPException: Raises 404 if user was not found.
+      >  HTTPException: Raises 404 if user was not found.
 
     ### Returns:  
-        >  UserResponse: The user response model.
+      >  UserResponse: The user response model.
     """
     user = user_service.fetch(db, id)
     if not user:
@@ -61,10 +61,10 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     ## Creates an user.
 
     ### Args:  
-        >  user (UserCreate): The user update model.
+      >  user (UserCreate): The user update model.
 
     ### Returns:  
-        >  UserResponse: The user response model.
+      >  UserResponse: The user response model.
     """
     user = user_service.create(db, user)
     return user
@@ -76,14 +76,14 @@ def update_user(id: int, user: UserUpdate, db: Session = Depends(get_db)):
     ## Edits an user by id.
 
     ### Args:  
-        >  id (int): The user ID.  
-        >  user (UserUpdate): The user update model.
+      >  id (int): The user ID.  
+      >  user (UserUpdate): The user update model.
 
     ### Raises:  
-        >  HTTPException: Raises 404 if user was not found.
+      >  HTTPException: Raises 404 if user was not found.
 
     ### Returns:  
-        >  UserResponse: The user response model.
+      >  UserResponse: The user response model.
     """
     user = user_service.update(db, id, user)
     if not user:
@@ -97,13 +97,13 @@ def delete_user(id: int, db: Session = Depends(get_db)):
     ## Deletes an user by id.
 
     ### Args:  
-        >  id (int): The user ID.
+      >  id (int): The user ID.
 
     ### Raises:  
-        >  HTTPException: Raises 404 if user was not found.
+      >  HTTPException: Raises 404 if user was not found.
 
     ### Returns:  
-        >  UserResponse: The user response model.
+      >  UserResponse: The user response model.
     """
     user = user_service.delete(db, id)
     if not user:

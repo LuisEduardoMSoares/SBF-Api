@@ -41,13 +41,13 @@ def get_all_providers(db: Session = Depends(get_db), user: User=Depends(manager)
     ## Retrieve a list of providers.
 
     ### Args:  
-        >  id (int): The provider ID.  
-        >  page (int): Page to fetch.  
-        >  per_page (int): Quantity of providers per page.  
-        >  name (str): Provider name to filter.
+      >  id (int): The provider ID.  
+      >  page (int): Page to fetch.  
+      >  per_page (int): Quantity of providers per page.  
+      >  name (str): Provider name to filter.
 
     ### Returns:  
-        >  ProvidersResponse: A dict with providers records and pagination metadata.
+      >  ProvidersResponse: A dict with providers records and pagination metadata.
     """
     try:
         providers = provider_service.fetch_all(db, page, per_page, name)
@@ -66,13 +66,13 @@ def get_one_provider(id: int, db: Session = Depends(get_db), user: User=Depends(
     ## Retrieve one provider.
 
     ### Args:  
-        >  id (int): The provider ID.
+      >  id (int): The provider ID.
 
     ### Raises:  
-        >  HTTPException: Raises 404 if provider was not found.
+      >  HTTPException: Raises 404 if provider was not found.
 
     ### Returns:  
-        >  ProviderResponse: The provider response model.
+      >  ProviderResponse: The provider response model.
     """
     provider = provider_service.fetch(db, id)
     if not provider:
@@ -86,10 +86,10 @@ def create_provider(provider: ProviderCreate, db: Session = Depends(get_db), use
     ## Creates a provider.
 
     ### Args:  
-        >  provider (ProviderCreate): The provider create model.
+      >  provider (ProviderCreate): The provider create model.
 
     ### Returns:  
-        >  ProviderResponse: The provider response model.
+      >  ProviderResponse: The provider response model.
     """
     try:
         provider = provider_service.create(db, user, provider)
@@ -105,14 +105,14 @@ def update_provider(id: int, provider: ProviderUpdate, db: Session = Depends(get
     ## Edits a provider by id.
 
     ### Args:  
-        >  id (int): The provider ID.  
-        >  provider (ProviderUpdate): The provider update model.
+      >  id (int): The provider ID.  
+      >  provider (ProviderUpdate): The provider update model.
 
     ### Raises:  
-        >  HTTPException: Raises 404 if provider was not found.
+      >  HTTPException: Raises 404 if provider was not found.
 
     ### Returns:  
-        >  ProviderResponse: The provider response model.
+      >  ProviderResponse: The provider response model.
     """
     provider = provider_service.update(db, id, provider)
     if not provider:
@@ -126,13 +126,13 @@ def delete_provider(id: int, db: Session = Depends(get_db), user: User=Depends(m
     ## Deletes a provider by id.
 
     ### Args:  
-        >  id (int): The provider ID.
+      >  id (int): The provider ID.
 
     ### Raises:  
-        >  HTTPException: Raises 404 if provider was not found.
+      >  HTTPException: Raises 404 if provider was not found.
 
     ### Returns:  
-        >  UserResponse: The user response model.
+      >  UserResponse: The user response model.
     """
     provider = provider_service.delete(db, id)
     if not provider:
