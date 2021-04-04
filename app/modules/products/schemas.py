@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import List, Optional
 from ...utils.helpers import BaseSchema, MetaDatetimeSchema
+from ...utils.pagination import PaginationMetadataSchema
 
 
 class ProductCreate(BaseSchema):
@@ -56,3 +57,7 @@ class ProductResponse(BaseSchema):
                 }
             }
         }
+
+class ProductsResponse(BaseSchema):
+    pagination_metadata: Optional[PaginationMetadataSchema]
+    records: List[Optional[ProductResponse]]

@@ -8,7 +8,11 @@ from sqlalchemy.orm import Session
 from app.db.engine import get_db
 
 # Typing Imports
-from typing import List
+from typing import Optional
+
+# Exception Imports
+from sqlalchemy_filters.exceptions import InvalidPage
+from ...utils.exceptions import ItensNotFound
 
 # Authentication Imports
 from ..users.models import User
@@ -19,6 +23,7 @@ from .services import ProductService
 from .schemas import ProductCreate
 from .schemas import ProductUpdate
 from .schemas import ProductResponse
+from .schemas import ProductsResponse
 
 
 
@@ -27,20 +32,31 @@ product_service = ProductService()
 
 
 
-@route.get("/products/", response_model=List[ProductResponse])
-async def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager)):
+@route.get("/products/", response_model_exclude_unset=True, response_model=ProductsResponse)
+def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager),
+    page: Optional[int] = 0, per_page: Optional[int] = 20, name: Optional[str] = ''):
     """
     ## Retrieve a list of products.
 
-    ### Returns:  
-      >  List[ProductResponse]: A List of products response models.
-    """
-    products = await product_service.fetch_all(db)
-    return products
+    ### Args:  
+      >  id (int): The product ID.  
+      >  page (int): Page to fetch.  
+      >  per_page (int): Quantity of products per page.  
+      >  name (str): Product name to filter.
 
+    ### Returns:  
+      >  ProductsResponse: A dict with products records and pagination metadata.
+    """
+    try:
+        products = product_service.fetch_all(db, page, per_page, name)
+        return products
+    except InvalidPage:
+	    raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
+    except ItensNotFound:
+	    raise HTTPException(status_code=404, detail="Nenhum produto foi encontrado.")
 
 @route.get("/products/{id}", response_model=ProductResponse)
-async def get_one_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+def get_one_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Retrieve one product.
 
@@ -53,14 +69,14 @@ async def get_one_product(id: int, db: Session = Depends(get_db), user: User=Dep
     ### Returns:  
       >  ProductResponse: The product response model.
     """
-    product = await product_service.fetch(db, id)
+    product = product_service.fetch(db, id)
     if not product:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
     return product
 
 
 @route.post("/products/", response_model=ProductResponse)
-async def create_product(product: ProductCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def create_product(product: ProductCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Creates a product.
 
@@ -70,12 +86,12 @@ async def create_product(product: ProductCreate, db: Session = Depends(get_db), 
     ### Returns:  
       >  ProductResponse: The product response model.
     """
-    product = await product_service.create(db, product, user)
+    product = product_service.create(db, product, user)
     return product
 
 
 @route.patch("/products/{id}", response_model=ProductResponse)
-async def update_product(id: int, product: ProductUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def update_product(id: int, product: ProductUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Edits a product by id.
 
@@ -89,14 +105,14 @@ async def update_product(id: int, product: ProductUpdate, db: Session = Depends(
     ### Returns:  
       >  ProductResponse: The product response model.
     """
-    product = await product_service.update(db, id, product)
+    product = product_service.update(db, id, product)
     if not product:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
     return product
 
 
 @route.delete("/products/{id}", response_model=ProductResponse)
-async def delete_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+def delete_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Deletes a product by id.
 
@@ -109,7 +125,7 @@ async def delete_product(id: int, db: Session = Depends(get_db), user: User=Depe
     ### Returns:  
       >  ProductResponse: The product response model.
     """
-    product = await product_service.delete(db, id)
+    product = product_service.delete(db, id)
     if not product:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
     return product

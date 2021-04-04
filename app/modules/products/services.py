@@ -1,9 +1,14 @@
 # Standard Import
-from sqlalchemy import and_
+from sqlalchemy import and_, func
+from pydantic import parse_obj_as
+from sqlalchemy_filters import apply_pagination
 
 # Typing Imports
 from typing import List
 from sqlalchemy.orm import Session
+
+# Exception Imports
+from ...utils.exceptions import ItensNotFound
 
 # User Model
 from app.modules.users.models import User
@@ -13,25 +18,73 @@ from .models import Product
 from .schemas import ProductCreate
 from .schemas import ProductUpdate
 from .schemas import ProductResponse
+from .schemas import ProductsResponse
+
+# Pagination Metadata Schema
+from ...utils.pagination import make_pagination_metadata
 
 
 class ProductService:
-    async def fetch_all(self, db: Session) -> List[ProductResponse]:
+    def fetch_all(self, db: Session, page: int = 0, per_page: int = 20, name: str = '') -> ProductsResponse:
         """
-        Retrieve a list of products.
+        Retrieve a list of products, if the page argument is setted
+        to 0, the function returns will contains all data, filtered
+        by name if setted though.
 
         Args:
             db (Session): The database session.
+            page (int): Page to fetch.
+            per_page (int): Quantity of products per page.
+            name (str): Product name.
+
+        Raises:
+            InvalidPage: If the page informed is invalid.
+            ItensNotFound: If no item was found.
 
         Returns:
             List[ProductResponse]: A List of products response models.
         """
-        products = db.query(Product).filter(
-            Product.is_deleted == False
-        ).all()
-        return products
+        if page == 0:
+            products = db.query(Product).filter(
+                Product.is_deleted == False,
+                func.lower(Product.name).contains(name.lower(), autoescape=True)
+            ).order_by(Product.id).all()
+            products = parse_obj_as(List[ProductResponse], products)
 
-    async def fetch(self, db: Session, id: int) -> ProductResponse:
+            if len(products) == 0:
+                raise ItensNotFound("No products found")
+
+            response = ProductsResponse(
+                records = products
+            )
+
+        else:
+            query = db.query(Product).filter(
+                Product.is_deleted == False,
+                func.lower(Product.name).contains(name.lower(), autoescape=True)
+            ).order_by(Product.id)
+
+            query, pagination = apply_pagination(query, page_number=page, page_size=per_page)
+            products = parse_obj_as(List[ProductResponse], query.all())
+
+            if len(products) == 0:
+                raise ItensNotFound("No products found")
+
+            pagination_metadata = make_pagination_metadata(
+                current_page=page,
+                total_pages=pagination.num_pages,
+                per_page=per_page,
+                total_items=pagination.total_results,
+                name_filter=name
+            )
+            response = ProductsResponse(
+                pagination_metadata = pagination_metadata,
+                records = products
+            )
+
+        return response
+
+    def fetch(self, db: Session, id: int) -> ProductResponse:
         """
         Retrieve one product.
 
@@ -51,7 +104,7 @@ class ProductService:
         )).first()
         return single_product
 
-    async def create(self, db: Session, product: ProductCreate, user: User) -> ProductResponse:
+    def create(self, db: Session, product: ProductCreate, user: User) -> ProductResponse:
         """
         Creates a product.
 
@@ -68,7 +121,7 @@ class ProductService:
 
         return ProductResponse.from_orm(product)
 
-    async def update(self, db: Session, id: int, product: ProductUpdate) -> ProductResponse:
+    def update(self, db: Session, id: int, product: ProductUpdate) -> ProductResponse:
         """
         Edits a product by id.
 
@@ -91,7 +144,7 @@ class ProductService:
         new_product = ProductResponse.from_orm(original_product)
         return new_product
 
-    async def delete(self, db: Session, id: int) -> ProductResponse:
+    def delete(self, db: Session, id: int) -> ProductResponse:
         """
         Deletes a product by id.
 

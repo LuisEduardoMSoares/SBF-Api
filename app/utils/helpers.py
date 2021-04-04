@@ -11,7 +11,6 @@ class MetaDatetimeSchema(BaseModel):
     class Config:
         orm_mode = True
 
-
 class BaseSchema(BaseModel):
 
     class Config:
