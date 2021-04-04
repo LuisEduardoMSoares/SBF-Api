@@ -1,9 +1,6 @@
 # Typing imports
 from pydantic import BaseModel
 
-# Exception Imports
-from sqlalchemy_filters.exceptions import InvalidPage
-
 
 
 class PaginationLinksSchema(BaseModel):
@@ -77,11 +74,6 @@ def make_pagination_metadata(current_page: int, total_pages: int, per_page: int,
         total_items (int): Total of items per page.
         name_filter (str): Parameter to filtering by name.
     """
-    if current_page == 0:
-        raise InvalidPage(f"Page number should be positive: {current_page}")
-    elif current_page > total_pages:
-        raise InvalidPage(f"Page number invalid, the total of pages is {total_pages}: {current_page}")
-
     # set previous page
     if current_page == 1:
         previous_page = 1

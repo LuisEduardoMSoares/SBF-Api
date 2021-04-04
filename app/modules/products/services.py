@@ -1,4 +1,5 @@
 # Standard Import
+from pydantic.types import PositiveInt
 from sqlalchemy import and_, func
 from pydantic import parse_obj_as
 from sqlalchemy_filters import apply_pagination
@@ -8,7 +9,9 @@ from typing import List
 from sqlalchemy.orm import Session
 
 # Exception Imports
+from sqlalchemy_filters.exceptions import InvalidPage
 from ...utils.exceptions import ItensNotFound
+from ...utils.exceptions import InvalidPageItemsNumber
 
 # User Model
 from app.modules.users.models import User
@@ -25,7 +28,7 @@ from ...utils.pagination import make_pagination_metadata
 
 
 class ProductService:
-    def fetch_all(self, db: Session, page: int = 0, per_page: int = 20, name: str = '') -> ProductsResponse:
+    def fetch_all(self, db: Session, page: int = 0, per_page: PositiveInt = 20, name: str = '') -> ProductsResponse:
         """
         Retrieve a list of products, if the page argument is setted
         to 0, the function returns will contains all data, filtered
@@ -40,6 +43,7 @@ class ProductService:
         Raises:
             InvalidPage: If the page informed is invalid.
             ItensNotFound: If no item was found.
+            InvalidPageItemsNumber: Numbers of items per page must be greater than 0.
 
         Returns:
             List[ProductResponse]: A List of products response models.
@@ -59,6 +63,11 @@ class ProductService:
             )
 
         else:
+            if page < 0:
+                raise InvalidPage(f"Page number should be positive: {page}")
+            if per_page <= 0:
+                raise InvalidPageItemsNumber(f"Numbers of items per page must be greater than 0")
+
             query = db.query(Product).filter(
                 Product.is_deleted == False,
                 func.lower(Product.name).contains(name.lower(), autoescape=True)
@@ -69,6 +78,8 @@ class ProductService:
 
             if len(products) == 0:
                 raise ItensNotFound("No products found")
+            if page > pagination.num_pages:
+                raise InvalidPage(f"Page number invalid, the total of pages is {pagination.num_pages}: {page}")
 
             pagination_metadata = make_pagination_metadata(
                 current_page=page,

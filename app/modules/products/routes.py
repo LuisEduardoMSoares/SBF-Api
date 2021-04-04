@@ -13,6 +13,7 @@ from typing import Optional
 # Exception Imports
 from sqlalchemy_filters.exceptions import InvalidPage
 from ...utils.exceptions import ItensNotFound
+from ...utils.exceptions import InvalidPageItemsNumber
 
 # Authentication Imports
 from ..users.models import User
@@ -52,6 +53,8 @@ def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager),
         return products
     except InvalidPage:
 	    raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
+    except InvalidPageItemsNumber:
+	    raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
     except ItensNotFound:
 	    raise HTTPException(status_code=404, detail="Nenhum produto foi encontrado.")
 
