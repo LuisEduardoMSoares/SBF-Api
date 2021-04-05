@@ -95,7 +95,7 @@ class ProviderService:
 
         return response
 
-    def fetch_all(self, db: Session) -> List[ProviderResponse]:
+    def fetch_all_providers(self, db: Session) -> List[ProviderResponse]:
         """
         Retrieve a list of providers.
 
