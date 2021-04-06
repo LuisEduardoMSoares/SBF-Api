@@ -14,11 +14,11 @@ class PaginationLinksSchema(BaseModel):
         orm_mode = True
         schema_extra = {
             "example": {
-                "current": "?page=3&per_page=20&name=test",
-                "first": "?page=1&per_page=20&name=test",
-                "previous": "?page=2&per_page=20&name=test",
-                "next": "?page=4&per_page=20&name=test",
-                "last": "?page=5&per_page=20&name=test"
+                "current": "3?per_page=20&name=test",
+                "first": "1?per_page=20&name=test",
+                "previous": "2?per_page=20&name=test",
+                "next": "4?per_page=20&name=test",
+                "last": "5?per_page=20&name=test"
             }
         }
 
@@ -38,11 +38,11 @@ class PaginationMetadataSchema(BaseModel):
                 "page_count": 5,
                 "total_count": 100,
                 "links": {
-                    "current": "?page=3&per_page=20&name=test",
-                    "first": "?page=1&per_page=20&name=test",
-                    "previous": "?page=2&per_page=20&name=test",
-                    "next": "?page=4&per_page=20&name=test",
-                    "last": "?page=5&per_page=20&name=test"
+                    "current": "3?per_page=20&name=test",
+                    "first": "1?per_page=20&name=test",
+                    "previous": "2?per_page=20&name=test",
+                    "next": "4?per_page=20&name=test",
+                    "last": "5?per_page=20&name=test"
                 }
             }
         }
@@ -58,9 +58,9 @@ def _make_links(page: int, per_page: int, name_filter: str = ''):
         name_filter (str): Parameter to filtering by name.
     """
     if name_filter != '' and name_filter != None:
-        return f"?page={page}&per_page={per_page}&name={name_filter}"
+        return f"{page}?per_page={per_page}&name={name_filter}"
     else:
-        return f"?page={page}&per_page={per_page}"
+        return f"{page}?per_page={per_page}"
 
 def make_pagination_metadata(current_page: int, total_pages: int, per_page: int,
     total_items: int, name_filter: str = '') -> PaginationMetadataSchema:
