@@ -34,29 +34,49 @@ product_service = ProductService()
 
 
 @route.get("/products/", response_model_exclude_unset=True, response_model=ProductsResponse)
-def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager),
-    page: Optional[int] = 0, per_page: Optional[int] = 20, name: Optional[str] = ''):
+def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager), name: Optional[str] = ''):
     """
-    ## Retrieve a list of products.
+    ## Retrieve all products.
+
+    ### Args:  
+      >  id (int): The product ID.   
+      >  name (str): Product name to filter.
+
+    ### Returns:  
+      >  ProductsResponse: A dict with products records.
+    """
+    try:
+        products = product_service.fetch_all(db, name)
+        return products
+    except ItensNotFound:
+	      raise HTTPException(status_code=404, detail="Nenhum produto foi encontrado.")
+
+
+@route.get("/products/page/{page}", response_model=ProductsResponse)
+def get_all_products_in_current_page(page: int, db: Session = Depends(get_db), user: User=Depends(manager), 
+    per_page: Optional[int] = 20, name: Optional[str] = ''):
+    """
+    ## Retrieve all products in current page.
 
     ### Args:  
       >  id (int): The product ID.  
       >  page (int): Page to fetch.  
-      >  per_page (int): Quantity of products per page.  
+      >  per_page (int): Amount of products per page.  
       >  name (str): Product name to filter.
 
     ### Returns:  
       >  ProductsResponse: A dict with products records and pagination metadata.
     """
     try:
-        products = product_service.fetch_all(db, page, per_page, name)
+        products = product_service.fetch_all_with_pagination(db, page, per_page, name)
         return products
     except InvalidPage:
-	    raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
+	      raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
     except InvalidPageItemsNumber:
-	    raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
+	      raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
     except ItensNotFound:
-	    raise HTTPException(status_code=404, detail="Nenhum produto foi encontrado.")
+	      raise HTTPException(status_code=404, detail="Nenhum produto foi encontrado.")
+
 
 @route.get("/products/{id}", response_model=ProductResponse)
 def get_one_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
