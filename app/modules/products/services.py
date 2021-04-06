@@ -53,7 +53,6 @@ class ProductService:
         response = ProductsResponse(
             records = products
         )
-
         return response
 
     def fetch_all_with_pagination(self, db: Session, page: int, per_page: int = 20, name: str = '') -> ProductsResponse:
@@ -103,7 +102,6 @@ class ProductService:
             pagination_metadata = pagination_metadata,
             records = products
         )
-
         return response
 
     def fetch(self, db: Session, id: int) -> ProductResponse:

@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import Depends
+from fastapi import Path, Query
 
 # Database Import
 from app.db.engine import get_db
@@ -35,29 +36,48 @@ provider_service = ProviderService()
 
 
 @route.get("/providers/", response_model_exclude_unset=True, response_model=ProvidersResponse)
-def get_all_providers(db: Session = Depends(get_db), user: User=Depends(manager),
-    page: Optional[int] = 0, per_page: Optional[int] = 20, name: Optional[str] = ''):
+def get_all_providers(db: Session = Depends(get_db), user: User=Depends(manager), name: Optional[str] = ''):
     """
-    ## Retrieve a list of providers.
+    ## Retrieve all providers.
+
+    ### Args:  
+      >  id (int): The provider ID.   
+      >  name (str): Provider name to filter.
+
+    ### Returns:  
+      >  ProvidersResponse: A dict with providers records.
+    """
+    try:
+        providers = provider_service.fetch_all(db, name)
+        return providers
+    except ItensNotFound:
+	      raise HTTPException(status_code=404, detail="Nenhum fornecedor foi encontrado.")
+
+
+@route.get("/providers/page/{page}", response_model=ProvidersResponse)
+def get_all_providers_in_current_page(page: int = Path(..., gt=0), per_page: int = Query(default=20, gt=0),
+    name: Optional[str] = '', db: Session = Depends(get_db), user: User=Depends(manager)):
+    """
+    ## Retrieve all providers in current page.
 
     ### Args:  
       >  id (int): The provider ID.  
       >  page (int): Page to fetch.  
-      >  per_page (int): Quantity of providers per page.  
+      >  per_page (int): Amount of providers per page.  
       >  name (str): Provider name to filter.
 
     ### Returns:  
       >  ProvidersResponse: A dict with providers records and pagination metadata.
     """
     try:
-        providers = provider_service.fetch_all(db, page, per_page, name)
+        providers = provider_service.fetch_all_with_pagination(db, page, per_page, name)
         return providers
     except InvalidPage:
-	    raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
+	      raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
     except InvalidPageItemsNumber:
-	    raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
+	      raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
     except ItensNotFound:
-	    raise HTTPException(status_code=404, detail="Nenhum fornecedor foi encontrado.")
+	      raise HTTPException(status_code=404, detail="Nenhum fornecedor foi encontrado.")
 
 
 @route.get("/providers/{id}", response_model=ProviderResponse)

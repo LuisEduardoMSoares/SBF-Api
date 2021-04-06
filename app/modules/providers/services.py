@@ -28,17 +28,43 @@ from ...utils.pagination import make_pagination_metadata
 
 
 class ProviderService:
-    def fetch_all(self, db: Session, page: int = 0, per_page: PositiveInt = 20, name: str = '') -> ProvidersResponse:
+    def fetch_all(self, db: Session, name: str = '') -> ProvidersResponse:
         """
-        Retrieve a list of providers, if the page argument is setted
-        to 0, the function returns will contains all data, filtered
-        by name if setted though.
+        Retrieve all providers records.
+
+        Args:
+            db (Session): The database session.
+            name (str): Provider name to filter.
+
+        Raises:
+            ItensNotFound: If no item was found.
+
+        Returns:
+            ProvidersResponse: A dict with providers records.
+        """
+        providers = db.query(Provider).filter(
+            Provider.is_deleted == False,
+            func.lower(Provider.name).contains(name.lower(), autoescape=True)
+        ).order_by(Provider.id).all()
+        providers = parse_obj_as(List[ProviderResponse], providers)
+
+        if len(providers) == 0:
+            raise ItensNotFound("No providers found")
+
+        response = ProvidersResponse(
+            records = providers
+        )
+        return response
+
+    def fetch_all_with_pagination(self, db: Session, page: int, per_page: int = 20, name: str = '') -> ProvidersResponse:
+        """
+        Retrieve all providers records listed by page argument and pagination metadata.
 
         Args:
             db (Session): The database session.
             page (int): Page to fetch.
-            per_page (int): Quantity of providers per page.
-            name (str): Provider name.
+            per_page (int): Amount of providers per page.
+            name (str): Provider name to filter.
 
         Raises:
             InvalidPage: If the page informed is invalid.
@@ -46,69 +72,38 @@ class ProviderService:
             InvalidPageItemsNumber: Numbers of items per page must be greater than 0.
 
         Returns:
-            List[ProviderResponse]: A List of providers response models.
+            ProvidersResponse: A dict with providers records and pagination metadata.
         """
-        if page == 0:
-            providers = db.query(Provider).filter(
-                Provider.is_deleted == False,
-                func.lower(Provider.name).contains(name.lower(), autoescape=True)
-            ).order_by(Provider.id).all()
-            providers = parse_obj_as(List[ProviderResponse], providers)
+        if page <= 0:
+            raise InvalidPage(f"Page number should be positive and greater than zero: {page}")
+        if per_page <= 0:
+            raise InvalidPageItemsNumber(f"Numbers of items per page must be greater than zero")
 
-            if len(providers) == 0:
-                raise ItensNotFound("No providers found")
+        query = db.query(Provider).filter(
+            Provider.is_deleted == False,
+            func.lower(Provider.name).contains(name.lower(), autoescape=True)
+        ).order_by(Provider.id)
 
-            response = ProvidersResponse(
-                records = providers
-            )
+        query, pagination = apply_pagination(query, page_number=page, page_size=per_page)
+        providers = parse_obj_as(List[ProviderResponse], query.all())
 
-        else:
-            if page < 0:
-                raise InvalidPage(f"Page number should be positive: {page}")
-            if per_page <= 0:
-                raise InvalidPageItemsNumber(f"Numbers of items per page must be greater than 0")
+        if page > pagination.num_pages and pagination.num_pages > 0:
+            raise InvalidPage(f"Page number invalid, the total of pages is {pagination.num_pages}: {page}")
+        if len(providers) == 0:
+            raise ItensNotFound("No providers found")
 
-            query = db.query(Provider).filter(
-                Provider.is_deleted == False,
-                func.lower(Provider.name).contains(name.lower(), autoescape=True)
-            ).order_by(Provider.id)
-
-            query, pagination = apply_pagination(query, page_number=page, page_size=per_page)
-            providers = parse_obj_as(List[ProviderResponse], query.all())
-
-            if len(providers) == 0:
-                raise ItensNotFound("No providers found")
-            if page > pagination.num_pages:
-                raise InvalidPage(f"Page number invalid, the total of pages is {pagination.num_pages}: {page}")
-
-            pagination_metadata = make_pagination_metadata(
-                current_page=page,
-                total_pages=pagination.num_pages,
-                per_page=per_page,
-                total_items=pagination.total_results,
-                name_filter=name
-            )
-            response = ProvidersResponse(
-                pagination_metadata = pagination_metadata,
-                records = providers
-            )
-
+        pagination_metadata = make_pagination_metadata(
+            current_page=page,
+            total_pages=pagination.num_pages,
+            per_page=per_page,
+            total_items=pagination.total_results,
+            name_filter=name
+        )
+        response = ProvidersResponse(
+            pagination_metadata = pagination_metadata,
+            records = providers
+        )
         return response
-
-    def fetch_all_providers(self, db: Session) -> List[ProviderResponse]:
-        """
-        Retrieve a list of providers.
-
-        Args:
-            db (Session): The database session.
-
-        Returns:
-            List[ProviderResponse]: A List of providers response models.
-        """
-        providers = db.query(Provider).filter(
-            Provider.is_deleted==False
-        ).all()
-        return providers
 
     def fetch(self, db: Session, id: int) -> ProviderResponse:
         """

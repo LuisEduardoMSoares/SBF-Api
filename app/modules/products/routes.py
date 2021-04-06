@@ -2,6 +2,7 @@
 from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import Depends
+from fastapi import Path, Query
 
 # Database Import
 from app.db.engine import get_db
@@ -53,8 +54,8 @@ def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager),
 
 
 @route.get("/products/page/{page}", response_model=ProductsResponse)
-def get_all_products_in_current_page(page: int, db: Session = Depends(get_db), user: User=Depends(manager), 
-    per_page: Optional[int] = 20, name: Optional[str] = ''):
+def get_all_products_in_current_page(page: int = Path(..., gt=0), per_page: int = Query(default=20, gt=0),
+    name: Optional[str] = '', db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Retrieve all products in current page.
 
