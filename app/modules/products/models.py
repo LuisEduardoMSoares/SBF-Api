@@ -1,4 +1,3 @@
-from app.modules.providers.models import Provider
 import sqlalchemy as db
 
 from sqlalchemy.orm import relationship
@@ -13,6 +12,7 @@ class ProductImage(BaseMixin, Base):
     product_id = db.Column(db.Integer, db.ForeignKey('base_products.id'), primary_key=True)
     image_data = db.Column(db.TEXT, default="R0lGODdhAQABAPAAAP8AAAAAACwAAAAAAQABAAACAkQBADs=")
 
+    # Relationships
     product = relationship("Product", lazy="joined", back_populates="image")
 
 
