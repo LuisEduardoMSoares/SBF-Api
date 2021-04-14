@@ -57,7 +57,11 @@ class ProviderResponse(BaseSchema):
                 "cnpj": "00000000000000",
                 "phone_number": "00111115555",
                 "email": "fornecedor@sbf.com",
-                "contact_name": "Ciclano"
+                "contact_name": "Ciclano",
+                "metadatetime": {
+                    "created_on": "2020-01-01T00:00:00.000001",
+                    "updated_on": "2020-01-01T00:00:00.000001"
+                }
             }
         }
 

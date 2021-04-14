@@ -1,5 +1,6 @@
 import sqlalchemy as db
-from sqlalchemy.engine.base import Transaction
+
+from sqlalchemy.orm import relationship
 
 from ...db.engine import Base
 from ...db.base import BaseMixin
@@ -14,6 +15,9 @@ class TransactionProduct(BaseMixin, Base):
     # Transaction and Product Foreign keys
     transaction_id = db.Column(db.Integer, db.ForeignKey('base_transactions.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('base_products.id'), nullable=False)
+
+    # Relationships
+    transactions = relationship('Transaction', back_populates='products_transaction', uselist=False)
 
     # Define Indexes
     __table_args__ = (

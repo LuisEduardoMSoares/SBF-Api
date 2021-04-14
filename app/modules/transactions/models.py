@@ -21,5 +21,6 @@ class Transaction(BaseMixin, Base):
     created_by = db.Column(db.Integer, db.ForeignKey('base_users.id'), nullable=False)
 
     # Relationships
-    provider = relationship("Provider", lazy="select", uselist=False)
-    user = relationship("User", lazy="select", back_populates="transactions", uselist=False)
+    products_transaction = relationship('Provider', lazy='select', back_populates='transactions', uselist=False)
+    provider = relationship('Provider', lazy='select', uselist=False)
+    user = relationship('User', lazy='select', back_populates='transactions', uselist=False)
