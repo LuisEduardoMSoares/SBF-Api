@@ -10,11 +10,12 @@ class TransactionTypeEnum(Enum):
     incoming = 'ENTRADA'
     outgoing = 'SAIDA'
 
-class IncomingProductsData(BaseModel):
+class TransactionProductsData(BaseModel):
     product_id: int
     quantity: int
 
     class Config:
+        orm_mode = True
         schema_extra = {
             "example": {
                 "product_id": 1,
@@ -23,12 +24,12 @@ class IncomingProductsData(BaseModel):
         }
 
 
-class IncomingTransactionCreate(BaseSchema):
+class TransactionCreate(BaseSchema):
     type: TransactionTypeEnum
     description: Optional[str]
     date: datetime
     provider_id: Optional[int]
-    products: List[IncomingProductsData]
+    products: List[TransactionProductsData]
 
     class Config:
         schema_extra = {
@@ -50,13 +51,13 @@ class IncomingTransactionCreate(BaseSchema):
             }
         }
 
-class IncomingTransactionResponse(BaseSchema):
+class TransactionResponse(BaseSchema):
     id: int
     type: TransactionTypeEnum
     description: Optional[str]
     date: datetime
     provider_id: Optional[int]
-    products: List[IncomingProductsData]
+    products: List[TransactionProductsData]
     metadatetime: MetaDatetimeSchema
 
     class Config:

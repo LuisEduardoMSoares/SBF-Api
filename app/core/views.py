@@ -20,6 +20,9 @@ from app.modules.providers.routes import route as provider_router
 # Import Product Router
 from app.modules.products.routes import route as product_router
 
+# Import Product Router
+from app.modules.transactions.routes import route as transaction_router
+
 
 def create_routes(app: FastAPI) -> None:
     """
@@ -39,3 +42,6 @@ def create_routes(app: FastAPI) -> None:
     
     # Include Product Router
     app.include_router(product_router, tags=['Products'], prefix=API_PREFIX)
+    
+    # Include Transaction Router
+    app.include_router(transaction_router, tags=['Transaction'], prefix=API_PREFIX)
