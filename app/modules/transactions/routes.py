@@ -106,9 +106,11 @@ def create_transaction(transaction: TransactionCreate, db: Session = Depends(get
     ### Returns:  
       >  TransactionResponse: The transaction response model.
     """
-    transaction = transaction_service.create(db, user, transaction)
-    return transaction
-
+    try:
+        transaction = transaction_service.create(db, user, transaction)
+        return transaction
+    except ItensNotFound as err:
+	    raise HTTPException(status_code=400, detail=f"Produto(s) de id `{str(err)}` não foi(foram) encontrado(s)")
 
 # @route.patch("/providers/{id}", response_model=TransactionResponse)
 # def update_provider(id: int, provider: TransactionUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):

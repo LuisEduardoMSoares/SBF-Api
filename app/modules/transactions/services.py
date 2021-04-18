@@ -13,6 +13,9 @@ from ...utils.exceptions import ItensNotFound
 # User Model
 from app.modules.users.models import User
 
+# Product Model
+from app.modules.products.models import Product
+
 # Transaction Model and Schemas
 from .models import Transaction
 from .schemas import TransactionTypeEnum
@@ -130,6 +133,23 @@ class TransactionService:
                 checked_payload[-1].quantity += value.quantity
         
         return checked_payload
+    
+    def _extract_product_id(self, payload: List[TransactionProductsData]) -> List[int]:
+        return [value.product_id for value in payload]
+
+    def _check_products_existence_and_increment_inventory(self, db: Session, payload: List[TransactionProductsData]) -> None:
+        products_ids = [value.product_id for value in payload]
+        products = db.query(Product).filter(Product.id.in_(products_ids)).all()
+
+        for product in products:
+            if product.id in products_ids:
+                products_ids.remove(product.id)
+        if len(products_ids) > 0:
+            raise ItensNotFound( str(products_ids).replace('[','').replace(']','') )
+
+        # TODO: adicionar feature para incrementar estoque dos produtos
+        
+
 
     def create(self, db: Session, user: User, transaction: TransactionCreate) -> TransactionResponse:
         """
@@ -145,8 +165,13 @@ class TransactionService:
         """
         if transaction.type == TransactionTypeEnum.incoming:
             checked_products = self._check_and_sum_duplicates(transaction.products)
-            # TODO: adicionar feature para checar existencia dos produtos
-            # TODO: adicionar feature para incrementar estoque dos produtos
+            self._check_products_existence_and_increment_inventory(db, checked_products)
+            
+            transaction_create = Transaction(
+                **transaction.dict(exclude_unset=True, exclude={'products'})
+            )
+            transaction_create.created_by = user.id
+
             products = [
                 TransactionProduct(
                     quantity = product.quantity,
@@ -154,11 +179,6 @@ class TransactionService:
                 ) 
                 for product in checked_products
             ]
-        
-            transaction_create = Transaction(
-                **transaction.dict(exclude_unset=True, exclude={'products'})
-            )
-            transaction_create.created_by = user.id
             transaction_create.products_transaction = products
             transaction = transaction_create.insert(db)
             
