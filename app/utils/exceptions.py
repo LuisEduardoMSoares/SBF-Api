@@ -3,3 +3,6 @@ class ItensNotFound(Exception):
 
 class InvalidPageItemsNumber(Exception):
     pass
+
+class InvalidStockQuantity(Exception):
+    pass

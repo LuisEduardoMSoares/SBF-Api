@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 # Exception Imports
 from ...utils.exceptions import ItensNotFound
+from ...utils.exceptions import InvalidStockQuantity
 
 # User Model
 from app.modules.users.models import User
@@ -122,6 +123,7 @@ class TransactionService:
     #     )).first()
     #     return provider
 
+
     def _sort_by_id_check_and_sum_duplicates(self, payload: List[TransactionProductsData]) -> List[TransactionProductsData]:
         already_added = []
         checked_payload = []
@@ -145,20 +147,39 @@ class TransactionService:
         if provider == None:
             raise ItensNotFound('Provider not found')
 
-    def _check_products_existence_and_increment_inventory(self, db: Session, payload: List[TransactionProductsData]) -> None:
-        products_ids = [value.product_id for value in payload]
-        products = db.query(Product).filter(Product.id.in_(products_ids)).all()
+    def _check_products_payload_and_increment_inventory(self, db: Session, payload: List[TransactionProductsData]) -> None:
+        # Extracts products id's and checks if quantity is greater or equal to 1
+        products_ids = []
+        invalid_stock_ids = []
+        for value in payload:
+            products_ids.append(value.product_id)
+            if value.quantity < 1:
+                invalid_stock_ids.append(value.product_id)
+        if len(invalid_stock_ids) > 0:
+            raise InvalidStockQuantity(
+                str(invalid_stock_ids).replace('[','').replace(']','')
+            )
 
+        products = db.query(Product).filter(Product.id.in_(products_ids)).order_by(Product.id).all()
+
+        # Checks products existence
+        products_ids_to_check = products_ids
         for product in products:
-            if product.id in products_ids:
-                products_ids.remove(product.id)
-        if len(products_ids) > 0:
-            raise ItensNotFound( str(products_ids).replace('[','').replace(']','') )
+            if product.id in products_ids_to_check:
+                products_ids_to_check.remove(product.id)
+        if len(products_ids_to_check) > 0:
+            raise ItensNotFound(
+                str(products_ids_to_check).replace('[','').replace(']','')
+            )
 
-        # TODO: adicionar feature para incrementar estoque dos produtos
+        # Increments products stock
+        products_to_update = []
+        for product_orm, product_paylaod in zip(products, payload):
+            product_orm.inventory += product_paylaod.quantity
+            products_to_update.append(dict(product_orm))
+        db.bulk_update_mappings(Product, products_to_update)
+        db.commit()
         
-
-
     def create(self, db: Session, user: User, transaction: TransactionCreate) -> TransactionResponse:
         """
         Creates a transaction.
@@ -172,9 +193,9 @@ class TransactionService:
             TransactionResponse: The provider response model.
         """
         if transaction.type == TransactionTypeEnum.incoming:
-            checked_products = self._sort_by_id_check_and_sum_duplicates(transaction.products)
             self._check_provider_existence(db, transaction.provider_id)
-            self._check_products_existence_and_increment_inventory(db, checked_products)
+            checked_products = self._sort_by_id_check_and_sum_duplicates(transaction.products)
+            self._check_products_payload_and_increment_inventory(db, checked_products)
             
             transaction_create = Transaction(
                 **transaction.dict(exclude_unset=True, exclude={'products'})
@@ -195,49 +216,3 @@ class TransactionService:
         
         else:
             raise NotImplementedError()
-
-
-    # def update(self, db: Session, id: int, provider: TransactionUpdate) -> TransactionResponse:
-    #     """
-    #     Edits a provider by id.
-
-    #     Args:
-    #         db (Session): The database session.
-    #         id (int): The provider ID.
-    #         provider (TransactionUpdate): The provider update model.
-
-    #     Returns:
-    #         TransactionResponse: The provider response model.
-    #     """
-    #     original_provider = db.query(Transaction).filter(and_(
-    #         Transaction.id == id,
-    #         Transaction.is_deleted == False
-    #     )).first()
-    #     if not original_provider:
-    #         return None
-
-    #     original_provider.update(db, **provider.dict(exclude_unset=True))
-    #     updated_provider = TransactionResponse.from_orm(original_provider)
-    #     return updated_provider
-
-    # def delete(self, db: Session, id: int) -> TransactionResponse:
-    #     """
-    #     Deletes a provider by id.
-
-    #     Args:
-    #         id (int): The provider ID.
-
-    #     Returns:
-    #         TransactionResponse: The provider response model.
-    #     """
-    #     original_provider = db.query(Transaction).filter(and_(
-    #         Transaction.id == id,
-    #         Transaction.is_deleted == False
-    #     )).first()
-    #     if not original_provider:
-    #         return None
-
-    #     original_provider.is_deleted = True
-    #     original_provider.update(db)
-    #     disable_provider = TransactionResponse.from_orm(original_provider)
-    #     return disable_provider
