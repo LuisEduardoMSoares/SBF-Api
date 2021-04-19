@@ -16,6 +16,9 @@ from app.modules.users.models import User
 # Product Model
 from app.modules.products.models import Product
 
+# Provider Model
+from app.modules.providers.models import Provider
+
 # Transaction Model and Schemas
 from .models import Transaction
 from .schemas import TransactionTypeEnum
@@ -119,7 +122,7 @@ class TransactionService:
     #     )).first()
     #     return provider
 
-    def _check_and_sum_duplicates(self, payload: List[TransactionProductsData]) -> List[TransactionProductsData]:
+    def _sort_by_id_check_and_sum_duplicates(self, payload: List[TransactionProductsData]) -> List[TransactionProductsData]:
         already_added = []
         checked_payload = []
 
@@ -136,6 +139,11 @@ class TransactionService:
     
     def _extract_product_id(self, payload: List[TransactionProductsData]) -> List[int]:
         return [value.product_id for value in payload]
+
+    def _check_provider_existence(self, db: Session, provider_id) -> None:
+        provider = db.query(Provider).filter(Provider.id == provider_id).first()
+        if provider == None:
+            raise ItensNotFound('Provider not found')
 
     def _check_products_existence_and_increment_inventory(self, db: Session, payload: List[TransactionProductsData]) -> None:
         products_ids = [value.product_id for value in payload]
@@ -164,7 +172,8 @@ class TransactionService:
             TransactionResponse: The provider response model.
         """
         if transaction.type == TransactionTypeEnum.incoming:
-            checked_products = self._check_and_sum_duplicates(transaction.products)
+            checked_products = self._sort_by_id_check_and_sum_duplicates(transaction.products)
+            self._check_provider_existence(db, transaction.provider_id)
             self._check_products_existence_and_increment_inventory(db, checked_products)
             
             transaction_create = Transaction(
@@ -172,17 +181,20 @@ class TransactionService:
             )
             transaction_create.created_by = user.id
 
-            products = [
+            products_transaction = [
                 TransactionProduct(
                     quantity = product.quantity,
                     product_id = product.product_id
                 ) 
                 for product in checked_products
             ]
-            transaction_create.products_transaction = products
+            transaction_create.products_transaction = products_transaction
             transaction = transaction_create.insert(db)
             
             return TransactionResponse.from_orm(transaction)
+        
+        else:
+            raise NotImplementedError()
 
 
     # def update(self, db: Session, id: int, provider: TransactionUpdate) -> TransactionResponse:
