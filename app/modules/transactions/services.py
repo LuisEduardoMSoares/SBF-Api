@@ -124,6 +124,14 @@ class TransactionService:
     #     return provider
 
 
+    def _extract_product_id(self, payload: List[TransactionProductsData]) -> List[int]:
+        return [value.product_id for value in payload]
+
+    def _check_provider_existence(self, db: Session, provider_id) -> None:
+        provider = db.query(Provider).filter(Provider.id == provider_id).first()
+        if provider == None:
+            raise ItensNotFound('Provider not found')
+
     def _sort_by_id_check_and_sum_duplicates(self, payload: List[TransactionProductsData]) -> List[TransactionProductsData]:
         already_added = []
         checked_payload = []
@@ -138,46 +146,63 @@ class TransactionService:
                 checked_payload[-1].quantity += value.quantity
         
         return checked_payload
-    
-    def _extract_product_id(self, payload: List[TransactionProductsData]) -> List[int]:
-        return [value.product_id for value in payload]
 
-    def _check_provider_existence(self, db: Session, provider_id) -> None:
-        provider = db.query(Provider).filter(Provider.id == provider_id).first()
-        if provider == None:
-            raise ItensNotFound('Provider not found')
-
-    def _check_products_payload_and_increment_inventory(self, db: Session, payload: List[TransactionProductsData]) -> None:
-        # Extracts products id's and checks if quantity is greater or equal to 1
+    def _check_if_products_payload_is_greater_than_zero(self, payload: List[TransactionProductsData]) -> List[int]:
         products_ids = []
         invalid_stock_ids = []
+
         for value in payload:
             products_ids.append(value.product_id)
-            if value.quantity < 1:
+
+            if value.quantity <= 0:
                 invalid_stock_ids.append(value.product_id)
+
         if len(invalid_stock_ids) > 0:
             raise InvalidStockQuantity(
                 str(invalid_stock_ids).replace('[','').replace(']','')
             )
 
-        products = db.query(Product).filter(Product.id.in_(products_ids)).order_by(Product.id).all()
+        return products_ids
 
-        # Checks products existence
-        products_ids_to_check = products_ids
-        for product in products:
-            if product.id in products_ids_to_check:
-                products_ids_to_check.remove(product.id)
-        if len(products_ids_to_check) > 0:
-            raise ItensNotFound(
-                str(products_ids_to_check).replace('[','').replace(']','')
+    def _check_if_products_payload_is_less_than_zero(self, payload: List[TransactionProductsData]) -> List[int]:
+        products_ids = []
+        invalid_stock_ids = []
+
+        for value in payload:
+            products_ids.append(value.product_id)
+
+            if value.quantity >= 0:
+                invalid_stock_ids.append(value.product_id)
+
+        if len(invalid_stock_ids) > 0:
+            raise InvalidStockQuantity(
+                str(invalid_stock_ids).replace('[','').replace(']','')
             )
 
-        # Increments products stock
-        products_to_update = []
-        for product_orm, product_paylaod in zip(products, payload):
-            product_orm.inventory += product_paylaod.quantity
-            products_to_update.append(dict(product_orm))
-        db.bulk_update_mappings(Product, products_to_update)
+        return products_ids
+
+    def _update_products_inventory(self,
+            db: Session,
+            payload_products_id: List[int],
+            products_payload: List[TransactionProductsData]
+        ) -> None:
+        products_found = db.query(Product).filter(Product.id.in_(payload_products_id)).order_by(Product.id).all()
+
+        raise_error = True if len(products_found) != len(products_payload) else False
+        for p_found, p_payload in (products_found, products_payload):
+            if raise_error == True:
+                if p_found.id in payload_products_id:
+                    payload_products_id.remove(p_found.id)
+            
+            else:
+                p_found.inventory += p_payload.quantity
+
+        if len(payload_products_id) > 0:
+            raise ItensNotFound(
+                str(payload_products_id).replace('[','').replace(']','')
+            )
+
+        db.bulk_update_mappings(Product, products_found)
         db.commit()
         
     def create(self, db: Session, user: User, transaction: TransactionCreate) -> TransactionResponse:
@@ -194,14 +219,17 @@ class TransactionService:
         """
         if transaction.type == TransactionTypeEnum.incoming:
             self._check_provider_existence(db, transaction.provider_id)
+
             checked_products = self._sort_by_id_check_and_sum_duplicates(transaction.products)
-            self._check_products_payload_and_increment_inventory(db, checked_products)
+            products_ids = self._check_if_products_payload_is_greater_than_zero(checked_products)
             
+            # Creates the record of the current transaction
             transaction_create = Transaction(
                 **transaction.dict(exclude_unset=True, exclude={'products'})
             )
             transaction_create.created_by = user.id
 
+            # Creates product transactions records
             products_transaction = [
                 TransactionProduct(
                     quantity = product.quantity,
@@ -211,7 +239,10 @@ class TransactionService:
             ]
             transaction_create.products_transaction = products_transaction
             transaction = transaction_create.insert(db)
-            
+
+            # Updates products inventory quantity
+            self._update_products_inventory(db, products_ids, checked_products)
+                        
             return TransactionResponse.from_orm(transaction)
         
         else:
