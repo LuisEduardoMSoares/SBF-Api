@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 # Exception Imports
 from ...utils.exceptions import ItensNotFound
+from ...utils.exceptions import InvalidStockQuantity
 
 # Authentication Imports
 from ..users.models import User
@@ -110,7 +111,9 @@ def create_transaction(transaction: TransactionCreate, db: Session = Depends(get
         transaction = transaction_service.create(db, user, transaction)
         return transaction
     except ItensNotFound as err:
-	    raise HTTPException(status_code=400, detail=f"Produto(s) de id `{str(err)}` não foi(foram) encontrado(s)")
+	    raise HTTPException(status_code=400, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
+    except InvalidStockQuantity as err:
+	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos deve ser maior do que zero: {str(err)}")
 
 # @route.patch("/providers/{id}", response_model=TransactionResponse)
 # def update_provider(id: int, provider: TransactionUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):

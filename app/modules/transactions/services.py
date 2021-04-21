@@ -124,9 +124,6 @@ class TransactionService:
     #     return provider
 
 
-    def _extract_product_id(self, payload: List[TransactionProductsData]) -> List[int]:
-        return [value.product_id for value in payload]
-
     def _check_provider_existence(self, db: Session, provider_id) -> None:
         provider = db.query(Provider).filter(Provider.id == provider_id).first()
         if provider == None:
@@ -181,28 +178,33 @@ class TransactionService:
 
         return products_ids
 
-    def _update_products_inventory(self,
-            db: Session,
-            payload_products_id: List[int],
-            products_payload: List[TransactionProductsData]
-        ) -> None:
+    def _get_products_from_database(self, db: Session, payload_products_id: List[int]) -> List[Product]:
         products_found = db.query(Product).filter(Product.id.in_(payload_products_id)).order_by(Product.id).all()
 
-        raise_error = True if len(products_found) != len(products_payload) else False
-        for p_found, p_payload in (products_found, products_payload):
-            if raise_error == True:
+        raise_error: bool = True
+        if len(products_found) == len(payload_products_id):
+            raise_error = False
+
+        if raise_error == True:
+            for p_found in products_found:
                 if p_found.id in payload_products_id:
                     payload_products_id.remove(p_found.id)
             
-            else:
-                p_found.inventory += p_payload.quantity
-
-        if len(payload_products_id) > 0:
             raise ItensNotFound(
                 str(payload_products_id).replace('[','').replace(']','')
             )
 
-        db.bulk_update_mappings(Product, products_found)
+        else:
+            return products_found
+    
+    def _update_products_inventory(self, db: Session, products_found: List[Product], products_payload: List[TransactionProductsData]) -> None:
+        dict_products = []
+        for p_found, p_payload in zip(products_found, products_payload):
+            p_found.inventory = p_found.inventory + p_payload.quantity
+            
+            dict_products.append(p_found.__dict__)
+        
+        db.bulk_update_mappings(Product, dict_products)
         db.commit()
         
     def create(self, db: Session, user: User, transaction: TransactionCreate) -> TransactionResponse:
@@ -222,7 +224,10 @@ class TransactionService:
 
             checked_products = self._sort_by_id_check_and_sum_duplicates(transaction.products)
             products_ids = self._check_if_products_payload_is_greater_than_zero(checked_products)
-            
+
+            # Updates products inventory quantity
+            products_to_update = self._get_products_from_database(db, products_ids)
+
             # Creates the record of the current transaction
             transaction_create = Transaction(
                 **transaction.dict(exclude_unset=True, exclude={'products'})
@@ -240,10 +245,11 @@ class TransactionService:
             transaction_create.products_transaction = products_transaction
             transaction = transaction_create.insert(db)
 
-            # Updates products inventory quantity
-            self._update_products_inventory(db, products_ids, checked_products)
-                        
-            return TransactionResponse.from_orm(transaction)
-        
-        else:
+            # Increments products stock
+            self._update_products_inventory(db, products_to_update, checked_products)
+
+
+        if transaction.type == TransactionTypeEnum.outgoing:
             raise NotImplementedError()
+
+        return TransactionResponse.from_orm(transaction)

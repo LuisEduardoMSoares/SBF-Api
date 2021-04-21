@@ -1,5 +1,6 @@
-from typing import List, Optional
 from pydantic import BaseModel
+from pydantic import PositiveInt
+from typing import List, Optional
 from enum import Enum
 from datetime import datetime
 
@@ -11,7 +12,7 @@ class TransactionTypeEnum(Enum):
     outgoing = 'SAIDA'
 
 class TransactionProductsData(BaseModel):
-    product_id: int
+    product_id: PositiveInt
     quantity: int
 
     class Config:
