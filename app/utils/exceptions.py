@@ -7,5 +7,8 @@ class InvalidPageItemsNumber(Exception):
 class InvalidStockQuantity(Exception):
     pass
 
+class NegativeStockError(Exception):
+    pass
+
 class NotEnoughStockQuantity(Exception):
     pass
