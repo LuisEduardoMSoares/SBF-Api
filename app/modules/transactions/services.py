@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 # Exception Imports
 from ...utils.exceptions import ItensNotFound
 from ...utils.exceptions import InvalidStockQuantity
+from ...utils.exceptions import NotEnoughStockQuantity
 
 # User Model
 from app.modules.users.models import User
@@ -178,6 +179,18 @@ class TransactionService:
 
         return products_ids
 
+    def _check_if_stock_has_enough_outgoing_quantity(self, products_found: List[Product], products_payload: List[TransactionProductsData]) -> None:
+        invalid_stock_ids = []
+
+        for p_found, p_payload in zip(products_found, products_payload):
+            if p_payload.quantity > p_found.inventory:
+                invalid_stock_ids.append(p_found.id)
+
+        if len(invalid_stock_ids) > 0:
+            raise NotEnoughStockQuantity(
+                str(invalid_stock_ids).replace('[','').replace(']','')
+            )
+
     def _get_products_from_database(self, db: Session, payload_products_id: List[int]) -> List[Product]:
         products_found = db.query(Product).filter(Product.id.in_(payload_products_id)).order_by(Product.id).all()
 
@@ -201,6 +214,16 @@ class TransactionService:
         dict_products = []
         for p_found, p_payload in zip(products_found, products_payload):
             p_found.inventory = p_found.inventory + p_payload.quantity
+            
+            dict_products.append(p_found.__dict__)
+        
+        db.bulk_update_mappings(Product, dict_products)
+        db.commit()
+
+    def _update_products_inventory_outgoing(self, db: Session, products_found: List[Product], products_payload: List[TransactionProductsData]) -> None:
+        dict_products = []
+        for p_found, p_payload in zip(products_found, products_payload):
+            p_found.inventory = p_found.inventory - p_payload.quantity
             
             dict_products.append(p_found.__dict__)
         
@@ -249,7 +272,34 @@ class TransactionService:
             self._update_products_inventory(db, products_to_update, checked_products)
 
 
-        if transaction.type == TransactionTypeEnum.outgoing:
-            raise NotImplementedError()
+        elif transaction.type == TransactionTypeEnum.outgoing:
+            checked_products = self._sort_by_id_check_and_sum_duplicates(transaction.products)
+            products_ids = self._check_if_products_payload_is_greater_than_zero(checked_products)
+
+            # Get products inventory
+            products_to_update = self._get_products_from_database(db, products_ids)
+            
+            # Check if stock has enough quantity to outgoing
+            self._check_if_stock_has_enough_outgoing_quantity(products_to_update, checked_products)
+
+            # Creates the record of the current transaction
+            transaction_create = Transaction(
+                **transaction.dict(exclude_unset=True, exclude={'products'})
+            )
+            transaction_create.created_by = user.id
+
+            # Creates product transactions records
+            products_transaction = [
+                TransactionProduct(
+                    quantity = product.quantity,
+                    product_id = product.product_id
+                ) 
+                for product in checked_products
+            ]
+            transaction_create.products_transaction = products_transaction
+            transaction = transaction_create.insert(db)
+
+            # Decrements products stock
+            self._update_products_inventory_outgoing(db, products_to_update, checked_products)
 
         return TransactionResponse.from_orm(transaction)
