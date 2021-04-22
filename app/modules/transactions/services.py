@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 # Exception Imports
 from ...utils.exceptions import ItensNotFound
 from ...utils.exceptions import InvalidStockQuantity
+from ...utils.exceptions import NegativeStockError
 
 # User Model
 from app.modules.users.models import User
@@ -207,6 +208,17 @@ class TransactionService:
         db.bulk_update_mappings(Product, dict_products)
         db.commit()
         
+    def _check_negative_product_stock(self, products_found: List[Product], products_payload: List[TransactionProductsData]) -> None:
+        negative_stocks_ids = []
+        for p_found, p_payload in zip(products_found, products_payload):
+            if p_found.inventory - p_payload.quantity < 0:
+                negative_stocks_ids.append(p_found.id)
+
+        if len(negative_stocks_ids) > 0:
+            raise NegativeStockError(
+                str(negative_stocks_ids).replace('[','').replace(']','')
+            )
+    
     def create(self, db: Session, user: User, transaction: TransactionCreate) -> TransactionResponse:
         """
         Creates a transaction.
