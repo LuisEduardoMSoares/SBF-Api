@@ -20,7 +20,7 @@ class Transaction(BaseMixin, Base):
     date = db.Column(db.DateTime, nullable=False)
     
     # Foreign keys from Provider and User
-    provider_id = db.Column(db.Integer, db.ForeignKey('base_providers.id'), nullable=False)
+    provider_id = db.Column(db.Integer, db.ForeignKey('base_providers.id'))
     created_by = db.Column(db.Integer, db.ForeignKey('base_users.id'), nullable=False)
 
     # Relationships
