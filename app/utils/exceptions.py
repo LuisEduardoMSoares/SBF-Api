@@ -1,3 +1,6 @@
+class ProviderNotFound(Exception):
+    pass
+
 class ItensNotFound(Exception):
     pass
 

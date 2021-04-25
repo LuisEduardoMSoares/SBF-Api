@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from ...utils.exceptions import ItensNotFound
 from ...utils.exceptions import InvalidStockQuantity
 from ...utils.exceptions import NotEnoughStockQuantity
+from ...utils.exceptions import ProviderNotFound
 
 # User Model
 from app.modules.users.models import User
@@ -128,7 +129,7 @@ class TransactionService:
     def _check_provider_existence(self, db: Session, provider_id) -> None:
         provider = db.query(Provider).filter(Provider.id == provider_id).first()
         if provider == None:
-            raise ItensNotFound('Provider not found')
+            raise ProviderNotFound(str(provider_id))
 
     def _sort_by_id_check_and_sum_duplicates(self, payload: List[TransactionProductsData]) -> List[TransactionProductsData]:
         already_added = []

@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from ...utils.exceptions import ItensNotFound
 from ...utils.exceptions import InvalidStockQuantity
 from ...utils.exceptions import NotEnoughStockQuantity
+from ...utils.exceptions import ProviderNotFound
 
 # Authentication Imports
 from ..users.models import User
@@ -134,12 +135,12 @@ def create_incoming_transaction(transaction: IncomingTransactionCreate, db: Sess
     try:
         transaction = transaction_service.create(db, user, transaction)
         return transaction
+    except ProviderNotFound as err:
+	    raise HTTPException(status_code=404, detail=f"O fornecedor informado não foi encontrado: {str(err)}")
     except ItensNotFound as err:
-	    raise HTTPException(status_code=400, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
+	    raise HTTPException(status_code=404, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
     except InvalidStockQuantity as err:
-	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos deve ser maior do que zero: {str(err)}")
-    except NotEnoughStockQuantity as err:
-	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos não possuem quantidade suficiente para a saída: {str(err)}")
+	    raise HTTPException(status_code=400, detail=f"A quantidade de estoque para os seguintes produtos deve ser maior do que zero: {str(err)}")
 
 
 @route.post("/outgoing/transaction/", status_code=201, response_model=OutgoingTransactionResponse, response_model_exclude_none=True)
@@ -157,8 +158,8 @@ def create_outgoing_transaction(transaction: OutgoingTransactionCreate, db: Sess
         transaction = transaction_service.create(db, user, transaction)
         return transaction
     except ItensNotFound as err:
-	    raise HTTPException(status_code=400, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
+	    raise HTTPException(status_code=404, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
     except InvalidStockQuantity as err:
-	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos deve ser maior do que zero: {str(err)}")
+	    raise HTTPException(status_code=400, detail=f"A quantidade informada para os seguintes produtos deve ser maior do que zero: {str(err)}")
     except NotEnoughStockQuantity as err:
-	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos não possuem quantidade suficiente para a saída: {str(err)}")
+	    raise HTTPException(status_code=422, detail=f"Os produtos informados não possuem quantidade em estoque suficiente para a saída: {str(err)}")
