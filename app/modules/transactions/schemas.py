@@ -25,7 +25,7 @@ class TransactionProductsData(BaseModel):
         }
 
 
-class TransactionCreate(BaseSchema):
+class IncomingTransactionCreate(BaseSchema):
     type: TransactionTypeEnum
     description: Optional[str]
     date: datetime
@@ -52,6 +52,100 @@ class TransactionCreate(BaseSchema):
             }
         }
 
+class IncomingTransactionResponse(BaseSchema):
+    id: int
+    type: TransactionTypeEnum
+    description: Optional[str]
+    date: datetime
+    provider_id: int
+    products: List[TransactionProductsData]
+    metadatetime: MetaDatetimeSchema
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "type": "ENTRADA",
+                "description": "Operação de teste de entrada de produtos",
+                "date": "2020-01-01T00:00:00.000001",
+                "provider_id": 1,
+                "products": [{
+                    "product_id": 1,
+                    "quantity": 8
+                },{
+                    "product_id": 3,
+                    "quantity": 15
+                },{
+                    "product_id": 5,
+                    "quantity": 22
+                }],
+                "metadatetime": {
+                    "created_on": "2020-01-01T00:00:00.000001",
+                    "updated_on": "2020-01-01T00:00:00.000001"
+                }
+            }
+        }
+
+
+class OutgoingTransactionCreate(BaseSchema):
+    type: TransactionTypeEnum
+    description: Optional[str]
+    date: datetime
+    products: List[TransactionProductsData]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "type": "SAIDA",
+                "description": "Operação de teste de saida de produtos",
+                "date": "2020-01-01T00:00:00.000001",
+                "products": [{
+                    "product_id": 1,
+                    "quantity": 8
+                },{
+                    "product_id": 3,
+                    "quantity": 15
+                },{
+                    "product_id": 5,
+                    "quantity": 22
+                }]
+            }
+        }
+
+class OutgoingTransactionResponse(BaseSchema):
+    id: int
+    type: TransactionTypeEnum
+    description: Optional[str]
+    date: datetime
+    products: List[TransactionProductsData]
+    metadatetime: MetaDatetimeSchema
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "type": "SAIDA",
+                "description": "Operação de teste de saida de produtos",
+                "date": "2020-01-01T00:00:00.000001",
+                "products": [{
+                    "product_id": 1,
+                    "quantity": 8
+                },{
+                    "product_id": 3,
+                    "quantity": 15
+                },{
+                    "product_id": 5,
+                    "quantity": 22
+                }],
+                "metadatetime": {
+                    "created_on": "2020-01-01T00:00:00.000001",
+                    "updated_on": "2020-01-01T00:00:00.000001"
+                }
+            }
+        }
+
+
 class TransactionResponse(BaseSchema):
     id: int
     type: TransactionTypeEnum
@@ -65,8 +159,8 @@ class TransactionResponse(BaseSchema):
         schema_extra = {
             "example": {
                 "id": 1,
-                "type": "ENTRADA",
-                "description": "Operação de teste de entrada de produtos",
+                "type": "ENTRADA/SAIDA",
+                "description": "Operação de teste de entrada ou de saida de produtos",
                 "date": "2020-01-01T00:00:00.000001",
                 "provider_id": 1,
                 "products": [{

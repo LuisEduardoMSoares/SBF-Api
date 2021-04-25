@@ -22,7 +22,8 @@ from app.core.auth import manager
 
 # User Schemas
 from .services import TransactionService
-from .schemas import TransactionCreate
+from .schemas import IncomingTransactionCreate, OutgoingTransactionCreate
+from .schemas import IncomingTransactionResponse, OutgoingTransactionResponse
 from .schemas import TransactionResponse
 
 
@@ -97,16 +98,38 @@ def get_all_transactions(db: Session = Depends(get_db), user: User=Depends(manag
 #     return provider
 
 
-@route.post("/transaction/", status_code=201, response_model=TransactionResponse)
-def create_transaction(transaction: TransactionCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
+# @route.post("/transaction/", status_code=201, response_model=TransactionResponse, response_model_exclude_none=True)
+# def create_transaction(transaction: TransactionCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
+#     """
+#     ## Creates a transaction.
+
+#     ### Args:  
+#       >  transaction (TransactionCreate): The transaction create model.
+
+#     ### Returns:  
+#       >  TransactionResponse: The transaction response model.
+#     """
+#     try:
+#         transaction = transaction_service.create(db, user, transaction)
+#         return transaction
+#     except ItensNotFound as err:
+# 	    raise HTTPException(status_code=400, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
+#     except InvalidStockQuantity as err:
+# 	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos deve ser maior do que zero: {str(err)}")
+#     except NotEnoughStockQuantity as err:
+# 	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos não possuem quantidade suficiente para a saída: {str(err)}")
+
+
+@route.post("/incoming/transaction/", status_code=201, response_model=IncomingTransactionResponse, response_model_exclude_none=True)
+def create_incoming_transaction(transaction: IncomingTransactionCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    ## Creates a transaction.
+    ## Creates an incoming transaction.
 
     ### Args:  
-      >  transaction (TransactionCreate): The transaction create model.
+      >  transaction (IncomingTransactionCreate): The incoming transaction create model.
 
     ### Returns:  
-      >  TransactionResponse: The transaction response model.
+      >  IncomingTransactionResponse: The incoming transaction response model.
     """
     try:
         transaction = transaction_service.create(db, user, transaction)
@@ -118,42 +141,24 @@ def create_transaction(transaction: TransactionCreate, db: Session = Depends(get
     except NotEnoughStockQuantity as err:
 	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos não possuem quantidade suficiente para a saída: {str(err)}")
 
-# @route.patch("/providers/{id}", response_model=TransactionResponse)
-# def update_provider(id: int, provider: TransactionUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
-#     """
-#     ## Edits a provider by id.
 
-#     ### Args:  
-#       >  id (int): The provider ID.  
-#       >  provider (TransactionUpdate): The provider update model.
-
-#     ### Raises:  
-#       >  HTTPException: Raises 404 if provider was not found.
-
-#     ### Returns:  
-#       >  TransactionResponse: The provider response model.
-#     """
-#     provider = provider_service.update(db, id, provider)
-#     if not provider:
-#         raise HTTPException(status_code=404, detail=f"Fornecedor de id {id} não foi encontrado.")
-#     return provider
-
-
-# @route.delete("/providers/{id}", response_model=TransactionResponse)
-# def delete_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+@route.post("/outgoing/transaction/", status_code=201, response_model=OutgoingTransactionResponse, response_model_exclude_none=True)
+def create_outgoing_transaction(transaction: OutgoingTransactionCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
     """
-    ## Deletes a provider by id.
+    ## Creates an outgoing transaction.
 
     ### Args:  
-      >  id (int): The provider ID.
-
-    ### Raises:  
-      >  HTTPException: Raises 404 if provider was not found.
+      >  transaction (OutgoingTransactionCreate): The outgoing transaction create model.
 
     ### Returns:  
-      >  UserResponse: The user response model.
+      >  OutgoingTransactionResponse: The outgoing transaction response model.
     """
-    provider = provider_service.delete(db, id)
-    if not provider:
-        raise HTTPException(status_code=404, detail=f"Fornecedor de id {id} não foi encontrado.")
-    return provider
+    try:
+        transaction = transaction_service.create(db, user, transaction)
+        return transaction
+    except ItensNotFound as err:
+	    raise HTTPException(status_code=400, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
+    except InvalidStockQuantity as err:
+	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos deve ser maior do que zero: {str(err)}")
+    except NotEnoughStockQuantity as err:
+	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos não possuem quantidade suficiente para a saída: {str(err)}")

@@ -4,7 +4,7 @@ from pydantic import parse_obj_as
 from sqlalchemy_filters import apply_pagination
 
 # Typing Imports
-from typing import List
+from typing import List, Union
 from sqlalchemy.orm import Session
 
 # Exception Imports
@@ -25,7 +25,7 @@ from app.modules.providers.models import Provider
 from .models import Transaction
 from .schemas import TransactionTypeEnum
 from .schemas import TransactionProductsData
-from .schemas import TransactionCreate
+from .schemas import IncomingTransactionCreate, OutgoingTransactionCreate
 from .schemas import TransactionResponse
 
 # Transaction Products Model
@@ -230,14 +230,16 @@ class TransactionService:
         db.bulk_update_mappings(Product, dict_products)
         db.commit()
     
-    def create(self, db: Session, user: User, transaction: TransactionCreate) -> TransactionResponse:
+    def create(self, db: Session, user: User,
+        transaction: Union[IncomingTransactionCreate, 
+                           OutgoingTransactionCreate]) -> TransactionResponse:
         """
-        Creates a transaction.
+        Creates a incoming or an outgoing transaction.
 
         Args:
             db (Session): The database session.
             user (User): The user model.
-            transaction (TransactionCreate): The transaction create model.
+            transaction (IncomingTransactionCreate or OutgoingTransactionCreate): The incoming or outgoing transaction create model.
 
         Returns:
             TransactionResponse: The provider response model.
@@ -301,5 +303,6 @@ class TransactionService:
 
             # Decrements products stock
             self._update_products_inventory_outgoing(db, products_to_update, checked_products)
+
 
         return TransactionResponse.from_orm(transaction)
