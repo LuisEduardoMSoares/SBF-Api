@@ -14,15 +14,16 @@ class BaseMixin(object):
     def metadatetime(self):
         return self
 
-    def insert(self, session: Session) -> object:
+    def insert(self, session: Session, refresh: bool = True) -> object:
         """
         Use only for insert operation
         """
         try:
             session.add(self)
             session.commit()
-            session.refresh(self)
-            return self
+            if refresh:
+                session.refresh(self)
+                return self
         except:
             session.rollback()
             raise

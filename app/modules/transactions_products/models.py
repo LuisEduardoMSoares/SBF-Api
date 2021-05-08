@@ -1,3 +1,4 @@
+from app.modules.products.models import Product
 import sqlalchemy as db
 
 from sqlalchemy.orm import relationship
@@ -18,6 +19,15 @@ class TransactionProduct(BaseMixin, Base):
 
     # Relationships
     transactions = relationship('Transaction', back_populates='products_transaction', uselist=False)
+    product: Product = relationship('Product', lazy='joined', uselist=False)
+
+    @property
+    def product_name(self):
+        return self.product.name
+
+    @property
+    def product_size(self):
+        return self.product.size
 
     # Define Indexes
     __table_args__ = (

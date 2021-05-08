@@ -13,6 +13,8 @@ class TransactionTypeEnum(Enum):
 
 class TransactionProductsData(BaseModel):
     product_id: PositiveInt
+    product_name: Optional[str]
+    product_size: Optional[str]
     quantity: int
 
     class Config:
@@ -20,6 +22,8 @@ class TransactionProductsData(BaseModel):
         schema_extra = {
             "example": {
                 "product_id": 1,
+                "product_name": "Camisa Azul",
+                "product_size": "P",
                 "quantity": 8
             }
         }
@@ -71,12 +75,18 @@ class IncomingTransactionResponse(BaseSchema):
                 "provider_id": 1,
                 "products": [{
                     "product_id": 1,
+                    "product_name": "Camisa Azul",
+                    "product_size": "P",
                     "quantity": 8
                 },{
                     "product_id": 3,
+                    "product_name": "Camisa Vermelha",
+                    "product_size": "G",
                     "quantity": 15
                 },{
                     "product_id": 5,
+                    "product_name": "Camisa Laranja",
+                    "product_size": "M",
                     "quantity": 22
                 }],
                 "metadatetime": {
@@ -130,12 +140,18 @@ class OutgoingTransactionResponse(BaseSchema):
                 "date": "2020-01-01T00:00:00.000001",
                 "products": [{
                     "product_id": 1,
+                    "product_name": "Camisa Azul",
+                    "product_size": "P",
                     "quantity": 8
                 },{
                     "product_id": 3,
+                    "product_name": "Camisa Vermelha",
+                    "product_size": "G",
                     "quantity": 15
                 },{
                     "product_id": 5,
+                    "product_name": "Camisa Laranja",
+                    "product_size": "M",
                     "quantity": 22
                 }],
                 "metadatetime": {

@@ -35,90 +35,36 @@ transaction_service = TransactionService()
 
 
 @route.get("/transaction/", response_model_exclude_unset=True, response_model=List[TransactionResponse])
-def get_all_transactions(db: Session = Depends(get_db), user: User=Depends(manager), name: Optional[str] = ''):
+def get_all_transactions(db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Retrieve all transactions.
 
-    ### Args:  
-      >  id (int): The transaction ID.   
-      >  name (str): Transaction name to filter.
-
     ### Returns:  
-      >  TransactionsResponse: A dict with transactions records.
+      >  List[TransactionResponse]: A list of dicts with transactions records.
     """
     try:
-        providers = transaction_service.fetch_all(db, name)
-        return providers
+        transactions = transaction_service.fetch_all(db)
+        return transactions
     except ItensNotFound:
 	    raise HTTPException(status_code=404, detail="Nenhuma movimentação foi encontrada.")
 
 
-# @route.get("/providers/page/{page}", response_model=TransactionsResponse)
-# def get_all_providers_in_current_page(page: int = Path(..., gt=0), per_page: int = Query(default=20, gt=0),
-#     name: Optional[str] = '', db: Session = Depends(get_db), user: User=Depends(manager)):
-#     """
-#     ## Retrieve all providers in current page.
+@route.get("/transaction/{id}", response_model_exclude_unset=True, response_model=TransactionResponse)
+def get_one_transaction(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+    """
+    ## Retrieve one transaction by id.
 
-#     ### Args:  
-#       >  id (int): The provider ID.  
-#       >  page (int): Page to fetch.  
-#       >  per_page (int): Amount of providers per page.  
-#       >  name (str): Transaction name to filter.
+    ### Args:  
+      >  id (int): The transaction ID.   
 
-#     ### Returns:  
-#       >  TransactionsResponse: A dict with providers records and pagination metadata.
-#     """
-#     try:
-#         providers = provider_service.fetch_all_with_pagination(db, page, per_page, name)
-#         return providers
-#     except InvalidPage:
-# 	      raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
-#     except InvalidPageItemsNumber:
-# 	      raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
-#     except ItensNotFound:
-# 	      raise HTTPException(status_code=404, detail="Nenhum fornecedor foi encontrado.")
-
-
-# @route.get("/providers/{id}", response_model=TransactionResponse)
-# def get_one_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
-#     """
-#     ## Retrieve one provider.
-
-#     ### Args:  
-#       >  id (int): The provider ID.
-
-#     ### Raises:  
-#       >  HTTPException: Raises 404 if provider was not found.
-
-#     ### Returns:  
-#       >  TransactionResponse: The provider response model.
-#     """
-#     provider = provider_service.fetch(db, id)
-#     if not provider:
-#         raise HTTPException(status_code=404, detail=f"Fornecedor de id {id} não foi encontrado.")
-#     return provider
-
-
-# @route.post("/transaction/", status_code=201, response_model=TransactionResponse, response_model_exclude_none=True)
-# def create_transaction(transaction: TransactionCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
-#     """
-#     ## Creates a transaction.
-
-#     ### Args:  
-#       >  transaction (TransactionCreate): The transaction create model.
-
-#     ### Returns:  
-#       >  TransactionResponse: The transaction response model.
-#     """
-#     try:
-#         transaction = transaction_service.create(db, user, transaction)
-#         return transaction
-#     except ItensNotFound as err:
-# 	    raise HTTPException(status_code=400, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
-#     except InvalidStockQuantity as err:
-# 	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos deve ser maior do que zero: {str(err)}")
-#     except NotEnoughStockQuantity as err:
-# 	    raise HTTPException(status_code=400, detail=f"Quantidade de estoque para os seguintes produtos não possuem quantidade suficiente para a saída: {str(err)}")
+    ### Returns:  
+      >  TransactionsResponse: A dict with transaction record.
+    """
+    try:
+        transaction = transaction_service.fetch_one(db, id)
+        return transaction
+    except ItensNotFound:
+	    raise HTTPException(status_code=404, detail=f"Movimentação de id {id} não foi encontrada.")
 
 
 @route.post("/incoming/transaction/", status_code=201, response_model=IncomingTransactionResponse, response_model_exclude_none=True)

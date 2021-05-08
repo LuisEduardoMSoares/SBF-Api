@@ -5,7 +5,7 @@ from sqlalchemy_filters import apply_pagination
 
 # Typing Imports
 from typing import List, Union
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 # Exception Imports
 from ...utils.exceptions import ItensNotFound
@@ -37,27 +37,56 @@ from ...utils.pagination import make_pagination_metadata
 
 
 class TransactionService:
-    def fetch_all(self, db: Session, name: str = '') -> TransactionResponse:
+    def fetch_all(self, db: Session) -> List[TransactionResponse]:
         """
         Retrieve all transactions records.
 
         Args:
             db (Session): The database session.
-            name (str): Transaction name to filter.
 
         Raises:
             ItensNotFound: If no item was found.
 
         Returns:
-            TransactionsResponse: A dict with transactions records.
+            List[TransactionResponse]: A list of dicts with transactions records.
         """
-        query_result = db.query(Transaction).order_by(Transaction.id).all()
+        query_result = db.query(Transaction).order_by(Transaction.id).options(
+            joinedload(Transaction.products_transaction).options(
+                joinedload(TransactionProduct.product)
+            )
+        ).all()
         transactions = parse_obj_as(List[TransactionResponse], query_result)
 
         if len(transactions) == 0:
             raise ItensNotFound("No transactions found")
 
         return transactions
+
+    def fetch_one(self, db: Session, id: int) -> TransactionResponse:
+        """
+        Retrieve one transaction record by id.
+
+        Args:
+            db (Session): The database session.
+            id (int): The transaction id.
+
+        Raises:
+            ItensNotFound: If transaction was found.
+
+        Returns:
+            List[TransactionResponse]: A dict with transaction record.
+        """
+        
+        transaction = db.query(Transaction).filter(Transaction.id == id).options(
+            joinedload(Transaction.products_transaction).options(
+                joinedload(TransactionProduct.product)
+            )
+        ).first()
+
+        if transaction == None:
+            raise ItensNotFound("Transaction was not found")
+
+        return transaction
 
     # def fetch_all_with_pagination(self, db: Session, page: int, per_page: int = 20, name: str = '') -> TransactionsResponse:
     #     """
@@ -306,4 +335,5 @@ class TransactionService:
             self._update_products_inventory_outgoing(db, products_to_update, checked_products)
 
 
+        # transaction = self.fetch_one(db, transaction.id)
         return TransactionResponse.from_orm(transaction)
