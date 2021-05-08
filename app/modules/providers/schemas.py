@@ -1,5 +1,8 @@
+from validate_docbr import CNPJ
+
 from typing import List, Optional
-from pydantic import EmailStr
+from pydantic import EmailStr, validator
+
 from ...utils.helpers import BaseSchema, MetaDatetimeSchema
 from ...utils.pagination import PaginationMetadataSchema
 
@@ -10,6 +13,12 @@ class ProviderCreate(BaseSchema):
     phone_number: str
     email: EmailStr
     contact_name: str
+
+    @validator('cnpj')
+    def cnpj_validation(cls, field_value):
+        if CNPJ().validate(field_value) == False:
+            raise ValueError('Invalid CNPJ')
+        return field_value
 
     class Config:
         schema_extra = {
@@ -28,6 +37,12 @@ class ProviderUpdate(BaseSchema):
     phone_number: Optional[str]
     email: Optional[EmailStr]
     contact_name: Optional[str]
+
+    @validator('cnpj')
+    def cnpj_validation(cls, field_value):
+        if CNPJ().validate(field_value) == False:
+            raise ValueError('Invalid CNPJ')
+        return field_value
 
     class Config:
         schema_extra = {

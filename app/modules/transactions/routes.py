@@ -33,7 +33,7 @@ route = APIRouter()
 transaction_service = TransactionService()
 
 
-
+#TODO: filtro pelo tipo, nome do produto, nome do fornecedor, range de datas e paginação
 @route.get("/transaction/", response_model_exclude_unset=True, response_model=List[TransactionResponse], response_model_exclude_none=True)
 def get_all_transactions(db: Session = Depends(get_db), user: User=Depends(manager)):
     """
