@@ -34,7 +34,7 @@ transaction_service = TransactionService()
 
 
 
-@route.get("/transaction/", response_model_exclude_unset=True, response_model=List[TransactionResponse])
+@route.get("/transaction/", response_model_exclude_unset=True, response_model=List[TransactionResponse], response_model_exclude_none=True)
 def get_all_transactions(db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Retrieve all transactions.

@@ -25,7 +25,7 @@ class Transaction(BaseMixin, Base):
 
     # Relationships
     products_transaction = relationship('TransactionProduct', lazy='select', back_populates='transactions')
-    provider = relationship('Provider', lazy='select', uselist=False)
+    provider = relationship('Provider', lazy='joined', uselist=False)
     user = relationship('User', lazy='select', back_populates='transactions', uselist=False)
 
     @property
@@ -34,3 +34,7 @@ class Transaction(BaseMixin, Base):
             TransactionProductsData.from_orm(product) 
             for product in self.products_transaction
         ]
+
+    @property
+    def provider_name(self) -> str:
+        return self.provider.name

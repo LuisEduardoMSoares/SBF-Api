@@ -62,6 +62,7 @@ class IncomingTransactionResponse(BaseSchema):
     description: Optional[str]
     date: datetime
     provider_id: int
+    provider_name: str
     products: List[TransactionProductsData]
     metadatetime: MetaDatetimeSchema
 
@@ -168,6 +169,7 @@ class TransactionResponse(BaseSchema):
     description: Optional[str]
     date: datetime
     provider_id: Optional[int]
+    provider_name: Optional[str]
     products: List[TransactionProductsData]
     metadatetime: MetaDatetimeSchema
 
