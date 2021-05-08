@@ -22,7 +22,6 @@ class ProductCreate(BaseSchema):
 class ProductUpdate(BaseSchema):
     name: Optional[str]
     size: Optional[str]
-    inventory: Optional[int]
     weight: Optional[float]
 
     class Config:
@@ -30,7 +29,6 @@ class ProductUpdate(BaseSchema):
             "example": {
                 "name": "Camisa Azul",
                 "size": "P",
-                "inventory": 10,
                 "weight": 10.5
             }
         }
