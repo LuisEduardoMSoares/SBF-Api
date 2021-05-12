@@ -2,9 +2,10 @@ from pydantic import BaseModel
 from pydantic import PositiveInt
 from typing import List, Optional
 from enum import Enum
-from datetime import datetime
+from datetime import date
 
 from ...utils.helpers import BaseSchema, MetaDatetimeSchema
+from ...utils.pagination import PaginationMetadataSchema
 
 
 class TransactionTypeEnum(Enum):
@@ -32,7 +33,7 @@ class TransactionProductsData(BaseModel):
 class IncomingTransactionCreate(BaseSchema):
     type: TransactionTypeEnum
     description: Optional[str]
-    date: datetime
+    date: date
     provider_id: Optional[int]
     products: List[TransactionProductsData]
 
@@ -41,7 +42,7 @@ class IncomingTransactionCreate(BaseSchema):
             "example": {
                 "type": "ENTRADA",
                 "description": "Operação de teste de entrada de produtos",
-                "date": "2020-01-01T00:00:00.000001",
+                "date": "2020-01-01",
                 "provider_id": 1,
                 "products": [{
                     "product_id": 1,
@@ -60,7 +61,7 @@ class IncomingTransactionResponse(BaseSchema):
     id: int
     type: TransactionTypeEnum
     description: Optional[str]
-    date: datetime
+    date: date
     provider_id: int
     provider_name: str
     products: List[TransactionProductsData]
@@ -72,7 +73,7 @@ class IncomingTransactionResponse(BaseSchema):
                 "id": 1,
                 "type": "ENTRADA",
                 "description": "Operação de teste de entrada de produtos",
-                "date": "2020-01-01T00:00:00.000001",
+                "date": "2020-01-01",
                 "provider_id": 1,
                 "products": [{
                     "product_id": 1,
@@ -101,7 +102,7 @@ class IncomingTransactionResponse(BaseSchema):
 class OutgoingTransactionCreate(BaseSchema):
     type: TransactionTypeEnum
     description: Optional[str]
-    date: datetime
+    date: date
     products: List[TransactionProductsData]
 
     class Config:
@@ -110,7 +111,7 @@ class OutgoingTransactionCreate(BaseSchema):
                 "id": 1,
                 "type": "SAIDA",
                 "description": "Operação de teste de saida de produtos",
-                "date": "2020-01-01T00:00:00.000001",
+                "date": "2020-01-01",
                 "products": [{
                     "product_id": 1,
                     "quantity": 8
@@ -128,7 +129,7 @@ class OutgoingTransactionResponse(BaseSchema):
     id: int
     type: TransactionTypeEnum
     description: Optional[str]
-    date: datetime
+    date: date
     products: List[TransactionProductsData]
     metadatetime: MetaDatetimeSchema
 
@@ -138,7 +139,7 @@ class OutgoingTransactionResponse(BaseSchema):
                 "id": 1,
                 "type": "SAIDA",
                 "description": "Operação de teste de saida de produtos",
-                "date": "2020-01-01T00:00:00.000001",
+                "date": "2020-01-01",
                 "products": [{
                     "product_id": 1,
                     "product_name": "Camisa Azul",
@@ -167,7 +168,7 @@ class TransactionResponse(BaseSchema):
     id: int
     type: TransactionTypeEnum
     description: Optional[str]
-    date: datetime
+    date: date
     provider_id: Optional[int]
     provider_name: Optional[str]
     products: List[TransactionProductsData]
@@ -179,7 +180,7 @@ class TransactionResponse(BaseSchema):
                 "id": 1,
                 "type": "ENTRADA/SAIDA",
                 "description": "Operação de teste de entrada ou de saida de produtos",
-                "date": "2020-01-01T00:00:00.000001",
+                "date": "2020-01-01",
                 "provider_id": 1,
                 "products": [{
                     "product_id": 1,
@@ -197,3 +198,7 @@ class TransactionResponse(BaseSchema):
                 }
             }
         }
+
+class TransactionsResponse(BaseSchema):
+    pagination_metadata: Optional[PaginationMetadataSchema]
+    records: List[TransactionResponse]

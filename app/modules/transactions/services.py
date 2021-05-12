@@ -1,4 +1,5 @@
 # Standard Imports
+from datetime import datetime, date
 from sqlalchemy import and_, func
 from pydantic import parse_obj_as
 from sqlalchemy_filters import apply_pagination
@@ -6,12 +7,16 @@ from sqlalchemy_filters import apply_pagination
 # Typing Imports
 from typing import List, Union
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm.query import Query
 
 # Exception Imports
-from ...utils.exceptions import ItensNotFound
+from sqlalchemy_filters.exceptions import InvalidPage
 from ...utils.exceptions import InvalidStockQuantity
 from ...utils.exceptions import NotEnoughStockQuantity
 from ...utils.exceptions import ProviderNotFound
+from ...utils.exceptions import ItensNotFound
+from ...utils.exceptions import InvalidPageItemsNumber
+from ...utils.exceptions import InvalidRangeTime
 
 # User Model
 from app.modules.users.models import User
@@ -27,7 +32,7 @@ from .models import Transaction
 from .schemas import TransactionTypeEnum
 from .schemas import TransactionProductsData
 from .schemas import IncomingTransactionCreate, OutgoingTransactionCreate
-from .schemas import TransactionResponse
+from .schemas import TransactionResponse, TransactionsResponse
 
 # Transaction Products Model
 from ..transactions_products.models import TransactionProduct
@@ -88,6 +93,65 @@ class TransactionService:
 
         return transaction
 
+    def _make_transaction_query_with_filters(self, db: Session, product_name: str = '', provider_name: str = '',
+        start_date: date = None, finish_date: date = None) -> Query:
+        query = db.query(Transaction)
+
+        # Filter by range datetimes
+        if type(start_date) == date and type(finish_date) == date:
+            if finish_date < start_date:
+                raise InvalidRangeTime("Invalid datetime range")
+            else:
+                query = query.filter(and_(
+                    Transaction.date >= start_date, Transaction.date <= finish_date
+                ))
+
+        # Filter by provider name
+        if provider_name != '':
+            query = query.join(Transaction.provider).filter(
+                func.lower(Provider.name).contains(provider_name.lower(), autoescape=True)
+            )
+
+        # Filter by product name
+        if product_name != '':
+            query = query.join(Transaction.products_transaction).filter(
+                func.lower(Product.name).contains(product_name.lower())
+            )
+
+        return query
+        
+    def fetch_all_with_pagination(self, db: Session, page: int, per_page: int = 20, product_name: str = '', 
+        provider_name: str = '', start_date: datetime = None, finish_date: datetime = None) -> TransactionsResponse:
+        if page <= 0:
+            raise InvalidPage(f"Page number should be positive and greater than zero: {page}")
+        if per_page <= 0:
+            raise InvalidPageItemsNumber(f"Numbers of items per page must be greater than zero")
+
+        query = self._make_transaction_query_with_filters(db, product_name, provider_name, start_date, finish_date)
+        query = query.order_by(Transaction.id)
+
+        query, pagination = apply_pagination(query, page_number=page, page_size=per_page)
+        transactions = parse_obj_as(List[TransactionResponse], query.all())
+
+        if page > pagination.num_pages and pagination.num_pages > 0:
+            raise InvalidPage(f"Page number invalid, the total of pages is {pagination.num_pages}: {page}")
+        if len(transactions) == 0:
+            raise ItensNotFound("No transactions found")
+
+        pagination_metadata = make_pagination_metadata(
+            current_page=page,
+            total_pages=pagination.num_pages,
+            per_page=per_page,
+            total_items=pagination.total_results,
+            name_filter=''
+        )
+        response = TransactionsResponse(
+            pagination_metadata = pagination_metadata,
+            records = transactions
+        )
+        return response
+
+    
     # def fetch_all_with_pagination(self, db: Session, page: int, per_page: int = 20, name: str = '') -> TransactionsResponse:
     #     """
     #     Retrieve all providers records listed by page argument and pagination metadata.

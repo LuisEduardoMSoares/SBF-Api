@@ -57,10 +57,12 @@ def _make_links(page: int, per_page: int, name_filter: str = ''):
         per_page (int): Quantity of items per page.
         name_filter (str): Parameter to filtering by name.
     """
+    link = f"{page}?per_page={per_page}"
+
     if name_filter != '' and name_filter != None:
-        return f"{page}?per_page={per_page}&name={name_filter}"
-    else:
-        return f"{page}?per_page={per_page}"
+        link = f"{link}&name={name_filter}"
+        
+    return link
 
 def make_pagination_metadata(current_page: int, total_pages: int, per_page: int,
     total_items: int, name_filter: str = '') -> PaginationMetadataSchema:

@@ -1,7 +1,9 @@
 # Standard Imports
+from datetime import datetime, date
 from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import Depends
+from fastapi import Path, Query
 
 # Database Import
 from app.db.engine import get_db
@@ -12,10 +14,12 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 # Exception Imports
+from sqlalchemy_filters.exceptions import InvalidPage
 from ...utils.exceptions import ItensNotFound
 from ...utils.exceptions import InvalidStockQuantity
 from ...utils.exceptions import NotEnoughStockQuantity
 from ...utils.exceptions import ProviderNotFound
+from ...utils.exceptions import InvalidPageItemsNumber
 
 # Authentication Imports
 from ..users.models import User
@@ -25,7 +29,7 @@ from app.core.auth import manager
 from .services import TransactionService
 from .schemas import IncomingTransactionCreate, OutgoingTransactionCreate
 from .schemas import IncomingTransactionResponse, OutgoingTransactionResponse
-from .schemas import TransactionResponse
+from .schemas import TransactionResponse, TransactionsResponse
 
 
 
@@ -47,6 +51,44 @@ def get_all_transactions(db: Session = Depends(get_db), user: User=Depends(manag
         return transactions
     except ItensNotFound:
 	    raise HTTPException(status_code=404, detail="Nenhuma movimentação foi encontrada.")
+
+
+@route.get("/transaction/page/{page}", response_model=TransactionsResponse)
+def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: int = Query(default=20, gt=0),
+    product_name: Optional[str] = '', provider_name: Optional[str] = '',
+    start_date: Optional[date] = '' ,finish_date: Optional[date] = '',
+    db: Session = Depends(get_db), user: User=Depends(manager)):
+    """
+    ## Retrieve all transactions in current page.
+
+    ### Args:  
+      >  page (int): Page to fetch.  
+      >  per_page (int): Amount of transactions per page.  
+      >  product_name (str): Product name to filter.  
+      >  provider_name (str): Provider name to filter.  
+      >  start_date (datetime): Start datetime to filter.  
+      >  finish_date (datetime): Finish datetime to filter.
+
+    ### Returns:  
+      >  ProvidersResponse: A dict with providers records and pagination metadata.
+    """
+    try:
+        providers = transaction_service.fetch_all_with_pagination(
+            db,
+            page,
+            per_page,
+            product_name,
+            provider_name,
+            start_date,
+            finish_date
+        )
+        return providers
+    except InvalidPage:
+	      raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
+    except InvalidPageItemsNumber:
+	      raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
+    except ItensNotFound:
+	      raise HTTPException(status_code=404, detail="Nenhum fornecedor foi encontrado.")
 
 
 @route.get("/transaction/{id}", response_model_exclude_unset=True, response_model=TransactionResponse)

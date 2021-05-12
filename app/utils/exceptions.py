@@ -12,3 +12,6 @@ class InvalidStockQuantity(Exception):
 
 class NotEnoughStockQuantity(Exception):
     pass
+
+class InvalidRangeTime(Exception):
+    pass

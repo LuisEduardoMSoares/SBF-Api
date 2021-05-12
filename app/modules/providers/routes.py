@@ -61,7 +61,6 @@ def get_all_providers_in_current_page(page: int = Path(..., gt=0), per_page: int
     ## Retrieve all providers in current page.
 
     ### Args:  
-      >  id (int): The provider ID.  
       >  page (int): Page to fetch.  
       >  per_page (int): Amount of providers per page.  
       >  name (str): Provider name to filter.
