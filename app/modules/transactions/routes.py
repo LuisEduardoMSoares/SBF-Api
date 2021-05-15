@@ -40,15 +40,29 @@ transaction_service = TransactionService()
 
 #TODO: filtro pelo tipo, nome do produto, nome do fornecedor, range de datas e paginação
 @route.get("/transaction/", response_model_exclude_unset=True, response_model=List[TransactionResponse], response_model_exclude_none=True)
-def get_all_transactions(db: Session = Depends(get_db), user: User=Depends(manager)):
+def get_all_transactions( product_name: Optional[str] = '', provider_name: Optional[str] = '',
+    start_date: Optional[date] = '' ,finish_date: Optional[date] = '',
+    db: Session = Depends(get_db), user: User=Depends(manager)):
     """
     ## Retrieve all transactions.
+
+    ### Args:   
+      >  product_name (str): Product name to filter.  
+      >  provider_name (str): Provider name to filter.  
+      >  start_date (date): Start date to filter. (YYYY-MM-DD)  
+      >  finish_date (date): Finish date to filter. (YYYY-MM-DD)
 
     ### Returns:  
       >  List[TransactionResponse]: A list of dicts with transactions records.
     """
     try:
-        transactions = transaction_service.fetch_all(db)
+        transactions = transaction_service.fetch_all(
+            db,
+            product_name,
+            provider_name,
+            start_date,
+            finish_date
+        )
         return transactions
     except ItensNotFound:
 	      raise HTTPException(status_code=404, detail="Nenhuma movimentação foi encontrada.")
@@ -67,8 +81,8 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
       >  per_page (int): Amount of transactions per page.  
       >  product_name (str): Product name to filter.  
       >  provider_name (str): Provider name to filter.  
-      >  start_date (datetime): Start datetime to filter.  
-      >  finish_date (datetime): Finish datetime to filter.
+      >  start_date (date): Start date to filter. (YYYY-MM-DD)  
+      >  finish_date (date): Finish date to filter. (YYYY-MM-DD)
 
     ### Returns:  
       >  ProvidersResponse: A dict with providers records and pagination metadata.
@@ -89,7 +103,7 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
     except InvalidPageItemsNumber:
 	      raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
     except ItensNotFound:
-	      raise HTTPException(status_code=404, detail="Nenhum fornecedor foi encontrado.")
+	      raise HTTPException(status_code=404, detail="Nenhuma movimentação encontrada.")
 
 
 @route.get("/transaction/{id}", response_model_exclude_unset=True, response_model=TransactionResponse)

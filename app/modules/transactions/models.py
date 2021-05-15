@@ -17,7 +17,7 @@ class Transaction(BaseMixin, Base):
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Enum(TransactionTypeEnum), nullable=False)
     description = db.Column(db.TEXT)
-    date = db.Column(db.DateTime, nullable=False)
+    date = db.Column(db.Date, nullable=False)
     
     # Foreign keys from Provider and User
     provider_id = db.Column(db.Integer, db.ForeignKey('base_providers.id'))

@@ -1,5 +1,5 @@
 # Standard Imports
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from sqlalchemy import and_, func
 from pydantic import parse_obj_as
 from sqlalchemy_filters import apply_pagination
@@ -43,31 +43,6 @@ from ...utils.pagination import make_pagination_metadata
 
 
 class TransactionService:
-    def fetch_all(self, db: Session) -> List[TransactionResponse]:
-        """
-        Retrieve all transactions records.
-
-        Args:
-            db (Session): The database session.
-
-        Raises:
-            ItensNotFound: If no item was found.
-
-        Returns:
-            List[TransactionResponse]: A list of dicts with transactions records.
-        """
-        query_result = db.query(Transaction).order_by(Transaction.id).options(
-            joinedload(Transaction.products_transaction).options(
-                joinedload(TransactionProduct.product)
-            )
-        ).all()
-        transactions = parse_obj_as(List[TransactionResponse], query_result)
-
-        if len(transactions) == 0:
-            raise ItensNotFound("No transactions found")
-
-        return transactions
-
     def fetch_one(self, db: Session, id: int) -> TransactionResponse:
         """
         Retrieve one transaction record by id.
@@ -100,11 +75,12 @@ class TransactionService:
 
         # Filter by range datetimes
         if type(start_date) == date and type(finish_date) == date:
+            finish_date += timedelta(days=1)
             if finish_date < start_date:
                 raise InvalidRangeTime("Invalid datetime range")
             else:
                 query = query.filter(and_(
-                    Transaction.date >= start_date, Transaction.date <= finish_date
+                    Transaction.date >= start_date, Transaction.date <= finish_date 
                 ))
 
         # Filter by provider name
@@ -115,14 +91,72 @@ class TransactionService:
 
         # Filter by product name
         if product_name != '':
-            query = query.join(Transaction.products_transaction).filter(
-                func.lower(Product.name).contains(product_name.lower())
+            ids = db.query(TransactionProduct).join(TransactionProduct.product).filter(
+                func.lower(Product.name).contains(product_name.lower(), autoescape=True)
+            ).with_entities(
+                TransactionProduct.transaction_id
+            ).all()
+            ids: List[int] = [id[0] for id in ids]
+            print(ids)
+
+            query = query.filter(
+                Transaction.id.in_(ids)
             )
 
         return query
-        
+
+    def fetch_all(self, db: Session, product_name: str = '', provider_name: str = '', 
+        start_date: date = None, finish_date: date = None) -> List[TransactionResponse]:
+        """
+        Retrieve all transactions records.
+
+        Args:
+            db (Session): The database session.
+            product_name (str): Product name to filter.
+            provider_name (str): Provider name to filter.
+            start_date (date): Start date to filter. (YYYY-MM-DD)
+            finish_date (date): Finish date to filter. (YYYY-MM-DD)
+
+        Raises:
+            ItensNotFound: If no item was found.
+
+        Returns:
+            List[TransactionResponse]: A list of dicts with transactions records.
+        """
+        query = self._make_transaction_query_with_filters(db, product_name, provider_name, start_date, finish_date)
+        query_result = query.order_by(Transaction.id).options(
+            joinedload(Transaction.products_transaction).options(
+                joinedload(TransactionProduct.product)
+            )
+        ).all()
+        transactions = parse_obj_as(List[TransactionResponse], query_result)
+
+        if len(transactions) == 0:
+            raise ItensNotFound("No transactions found")
+
+        return transactions
+
     def fetch_all_with_pagination(self, db: Session, page: int, per_page: int = 20, product_name: str = '', 
-        provider_name: str = '', start_date: datetime = None, finish_date: datetime = None) -> TransactionsResponse:
+        provider_name: str = '', start_date: date = None, finish_date: date = None) -> TransactionsResponse:
+        """
+        Retrieve all transacions records listed by page argument and pagination metadata.
+
+        Args:
+            page (int): Page to fetch.
+            per_page (int): Amount of transactions per page.
+            product_name (str): Product name to filter.
+            provider_name (str): Provider name to filter.
+            start_date (date): Start date to filter. (YYYY-MM-DD)
+            finish_date (date): Finish date to filter. (YYYY-MM-DD)
+
+        Raises:
+            InvalidPage: If the page informed is invalid.
+            ItensNotFound: If no item was found.
+            InvalidPageItemsNumber: Numbers of items per page must be greater than 0.
+
+        Returns:
+            TransactionsResponse: A dict with providers records and pagination metadata.
+        """
         if page <= 0:
             raise InvalidPage(f"Page number should be positive and greater than zero: {page}")
         if per_page <= 0:
@@ -139,86 +173,24 @@ class TransactionService:
         if len(transactions) == 0:
             raise ItensNotFound("No transactions found")
 
+        url_args = {
+            "product_name": product_name,
+            "provider_name": provider_name,
+            "start_date": start_date,
+            "finish_date": finish_date
+        }
         pagination_metadata = make_pagination_metadata(
             current_page=page,
             total_pages=pagination.num_pages,
             per_page=per_page,
             total_items=pagination.total_results,
-            name_filter=''
+            url_args=url_args
         )
         response = TransactionsResponse(
             pagination_metadata = pagination_metadata,
             records = transactions
         )
         return response
-
-    
-    # def fetch_all_with_pagination(self, db: Session, page: int, per_page: int = 20, name: str = '') -> TransactionsResponse:
-    #     """
-    #     Retrieve all providers records listed by page argument and pagination metadata.
-
-    #     Args:
-    #         db (Session): The database session.
-    #         page (int): Page to fetch.
-    #         per_page (int): Amount of providers per page.
-    #         name (str): Transaction name to filter.
-
-    #     Raises:
-    #         InvalidPage: If the page informed is invalid.
-    #         ItensNotFound: If no item was found.
-    #         InvalidPageItemsNumber: Numbers of items per page must be greater than 0.
-
-    #     Returns:
-    #         TransactionsResponse: A dict with providers records and pagination metadata.
-    #     """
-    #     if page <= 0:
-    #         raise InvalidPage(f"Page number should be positive and greater than zero: {page}")
-    #     if per_page <= 0:
-    #         raise InvalidPageItemsNumber(f"Numbers of items per page must be greater than zero")
-
-    #     query = db.query(Transaction).filter(
-    #         Transaction.is_deleted == False,
-    #         func.lower(Transaction.name).contains(name.lower(), autoescape=True)
-    #     ).order_by(Transaction.id)
-
-    #     query, pagination = apply_pagination(query, page_number=page, page_size=per_page)
-    #     providers = parse_obj_as(List[TransactionResponse], query.all())
-
-    #     if page > pagination.num_pages and pagination.num_pages > 0:
-    #         raise InvalidPage(f"Page number invalid, the total of pages is {pagination.num_pages}: {page}")
-    #     if len(providers) == 0:
-    #         raise ItensNotFound("No providers found")
-
-    #     pagination_metadata = make_pagination_metadata(
-    #         current_page=page,
-    #         total_pages=pagination.num_pages,
-    #         per_page=per_page,
-    #         total_items=pagination.total_results,
-    #         name_filter=name
-    #     )
-    #     response = TransactionsResponse(
-    #         pagination_metadata = pagination_metadata,
-    #         records = providers
-    #     )
-    #     return response
-
-    # def fetch(self, db: Session, id: int) -> TransactionResponse:
-    #     """
-    #     Retrieve one transaction.
-
-    #     Args:
-    #         db (Session): The database session.
-    #         id (int): The provider ID.
-
-    #     Returns:
-    #         TransactionResponse: The provider response model.
-    #     """
-    #     provider = db.query(Transaction).filter(and_(
-    #         Transaction.id == id,
-    #         Transaction.is_deleted == False
-    #     )).first()
-    #     return provider
-
 
     def _check_provider_existence(self, db: Session, provider_id) -> None:
         provider = db.query(Provider).filter(Provider.id == provider_id).first()

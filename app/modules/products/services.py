@@ -96,7 +96,7 @@ class ProductService:
             total_pages=pagination.num_pages,
             per_page=per_page,
             total_items=pagination.total_results,
-            name_filter=name
+            url_args={'name': name}
         )
         response = ProductsResponse(
             pagination_metadata = pagination_metadata,

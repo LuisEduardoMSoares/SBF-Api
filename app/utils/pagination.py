@@ -48,24 +48,44 @@ class PaginationMetadataSchema(BaseModel):
         }
 
 
-def _make_links(page: int, per_page: int, name_filter: str = ''):
+def _make_url_args(url_args: dict):
+    """
+    Make url parameters
+
+    Args:
+        url_args (Dict): Dict of url parametes
+
+    Returns:
+        str: The url parameters
+    
+    Example:
+        input: {'test1': 1, 'test2': 2, 'test3': 3}
+        output: "&test1=1&test2=2&test3=3"
+    """
+    url = ''
+    for key, value in url_args.items():
+        if key != '' and value != '' and value != None:
+            url = f'{url}&{key}={value}'
+    return url
+
+def _make_links(page: int, per_page: int, url_args: dict = {}):
     """
     Make pagination link parameters.
 
     Args:
         page (int): Page to fetch.
         per_page (int): Quantity of items per page.
-        name_filter (str): Parameter to filtering by name.
+        url_args (dict): Dict of url parametes.
     """
     link = f"{page}?per_page={per_page}"
-
-    if name_filter != '' and name_filter != None:
-        link = f"{link}&name={name_filter}"
+    url_params = _make_url_args(url_args)
+    # filtro de nome input: {'name': name_filter}
+    link = f"{link}{url_params}"
         
     return link
 
 def make_pagination_metadata(current_page: int, total_pages: int, per_page: int,
-    total_items: int, name_filter: str = '') -> PaginationMetadataSchema:
+    total_items: int, url_args: dict) -> PaginationMetadataSchema:
     """
     Make pagination metadata.
 
@@ -74,7 +94,7 @@ def make_pagination_metadata(current_page: int, total_pages: int, per_page: int,
         total_pages (int): Total of pages.
         per_page (int): Quantity of items per page.
         total_items (int): Total of items per page.
-        name_filter (str): Parameter to filtering by name.
+        url_args (dict): Dict of url parametes.
     """
     # set previous page
     if current_page == 1:
@@ -89,11 +109,11 @@ def make_pagination_metadata(current_page: int, total_pages: int, per_page: int,
         next_page = current_page + 1
 
     links = PaginationLinksSchema(
-        current = _make_links(current_page, per_page, name_filter),
-        first = _make_links(1, per_page, name_filter),
-        previous = _make_links(previous_page, per_page, name_filter),
-        next = _make_links(next_page, per_page, name_filter),
-        last = _make_links(total_pages, per_page, name_filter),
+        current = _make_links(current_page, per_page, url_args),
+        first = _make_links(1, per_page, url_args),
+        previous = _make_links(previous_page, per_page, url_args),
+        next = _make_links(next_page, per_page, url_args),
+        last = _make_links(total_pages, per_page, url_args),
     )
 
     metadata = PaginationMetadataSchema(
