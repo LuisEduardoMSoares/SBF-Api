@@ -85,7 +85,7 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
       >  finish_date (date): Finish date to filter. (YYYY-MM-DD)
 
     ### Returns:  
-      >  ProvidersResponse: A dict with providers records and pagination metadata.
+      >  TransactionsResponse: A dict with providers records and pagination metadata.
     """
     try:
         providers = transaction_service.fetch_all_with_pagination(
