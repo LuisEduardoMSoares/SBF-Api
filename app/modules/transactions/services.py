@@ -11,6 +11,7 @@ from sqlalchemy.orm.query import Query
 
 # Exception Imports
 from sqlalchemy_filters.exceptions import InvalidPage
+from ...utils.exceptions import ProductsNotFound
 from ...utils.exceptions import InvalidStockQuantity
 from ...utils.exceptions import NotEnoughStockQuantity
 from ...utils.exceptions import ProviderNotFound
@@ -338,6 +339,9 @@ class TransactionService:
         Returns:
             TransactionResponse: The provider response model.
         """
+        if len(transaction.products) == 0:
+            raise ProductsNotFound("Empty transaction products")
+
         if transaction.type == TransactionTypeEnum.incoming:
             self._check_provider_existence(db, transaction.provider_id)
 

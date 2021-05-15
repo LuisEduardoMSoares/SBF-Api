@@ -4,6 +4,9 @@ class ProviderNotFound(Exception):
 class ItensNotFound(Exception):
     pass
 
+class ProductsNotFound(Exception):
+    pass
+
 class InvalidPageItemsNumber(Exception):
     pass
 
