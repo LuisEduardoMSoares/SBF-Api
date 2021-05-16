@@ -1,5 +1,5 @@
 # Standard Imports
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from sqlalchemy import and_, func
 from pydantic import parse_obj_as
 from sqlalchemy_filters import apply_pagination
@@ -30,10 +30,10 @@ from app.modules.providers.models import Provider
 
 # Transaction Model and Schemas
 from .models import Transaction
-from .schemas import TransactionTypeEnum
 from .schemas import TransactionProductsData
 from .schemas import IncomingTransactionCreate, OutgoingTransactionCreate
 from .schemas import TransactionResponse, TransactionsResponse
+from .schemas import TransactionTypeEnum
 
 # Transaction Products Model
 from ..transactions_products.models import TransactionProduct
@@ -70,6 +70,7 @@ class TransactionService:
         return transaction
 
     def _make_transaction_query_with_filters(self, db: Session, product_name: str = '', provider_name: str = '',
+        description: str = '', transaction_type: TransactionTypeEnum = '',
         start_date: date = None, finish_date: date = None) -> Query:
         query = db.query(Transaction)
 
@@ -89,6 +90,18 @@ class TransactionService:
                 func.lower(Provider.name).contains(provider_name.lower(), autoescape=True)
             )
 
+        # Filter by description
+        if description != '':
+            query = query.filter(
+                func.lower(Transaction.description).contains(description.lower(), autoescape=True)
+            )
+
+        # Filter by transaction type (incoming or outcoming)
+        if transaction_type != '':
+            query = query.filter(
+                Transaction.type == transaction_type
+            )
+
         # Filter by product name
         if product_name != '':
             ids = db.query(TransactionProduct).join(TransactionProduct.product).filter(
@@ -105,7 +118,8 @@ class TransactionService:
 
         return query
 
-    def fetch_all(self, db: Session, product_name: str = '', provider_name: str = '', 
+    def fetch_all(self, db: Session, product_name: str = '', provider_name: str = '',
+        description: str = '', transaction_type: TransactionTypeEnum = '',
         start_date: date = None, finish_date: date = None) -> List[TransactionResponse]:
         """
         Retrieve all transactions records.
@@ -114,6 +128,8 @@ class TransactionService:
             db (Session): The database session.
             product_name (str): Product name to filter.
             provider_name (str): Provider name to filter.
+            description (str): Description to filter.
+            transaction_type (Enum): Transaction type to filter.
             start_date (date): Start date to filter. (YYYY-MM-DD)
             finish_date (date): Finish date to filter. (YYYY-MM-DD)
 
@@ -123,7 +139,15 @@ class TransactionService:
         Returns:
             List[TransactionResponse]: A list of dicts with transactions records.
         """
-        query = self._make_transaction_query_with_filters(db, product_name, provider_name, start_date, finish_date)
+        query = self._make_transaction_query_with_filters(
+            db,
+            product_name,
+            provider_name,
+            description,
+            transaction_type,
+            start_date,
+            finish_date
+        )
         query_result = query.order_by(Transaction.id).options(
             joinedload(Transaction.products_transaction).options(
                 joinedload(TransactionProduct.product)
@@ -136,8 +160,9 @@ class TransactionService:
 
         return transactions
 
-    def fetch_all_with_pagination(self, db: Session, page: int, per_page: int = 20, product_name: str = '', 
-        provider_name: str = '', start_date: date = None, finish_date: date = None) -> TransactionsResponse:
+    def fetch_all_with_pagination(self, db: Session, page: int, per_page: int = 20, product_name: str = '',
+        provider_name: str = '', description: str = '', transaction_type: TransactionTypeEnum = '',
+        start_date: date = None, finish_date: date = None) -> TransactionsResponse:
         """
         Retrieve all transacions records listed by page argument and pagination metadata.
 
@@ -146,8 +171,10 @@ class TransactionService:
             per_page (int): Amount of transactions per page.
             product_name (str): Product name to filter.
             provider_name (str): Provider name to filter.
-            start_date (date): Start date to filter. (YYYY-MM-DD)
-            finish_date (date): Finish date to filter. (YYYY-MM-DD)
+            description (str): Description to filter.
+            transaction_type (Enum): Transaction type to filter.
+            start_date (date): Start date to filter.
+            finish_date (date): Finish date to filter.
 
         Raises:
             InvalidPage: If the page informed is invalid.
@@ -162,7 +189,15 @@ class TransactionService:
         if per_page <= 0:
             raise InvalidPageItemsNumber(f"Numbers of items per page must be greater than zero")
 
-        query = self._make_transaction_query_with_filters(db, product_name, provider_name, start_date, finish_date)
+        query = self._make_transaction_query_with_filters(
+            db,
+            product_name,
+            provider_name,
+            description,
+            transaction_type, 
+            start_date,
+            finish_date
+        )
         query = query.order_by(Transaction.id)
 
         query, pagination = apply_pagination(query, page_number=page, page_size=per_page)
@@ -176,6 +211,8 @@ class TransactionService:
         url_args = {
             "product_name": product_name,
             "provider_name": provider_name,
+            "description": description,
+            "transaction_type": transaction_type.value if type(transaction_type) == TransactionTypeEnum else '',
             "start_date": start_date,
             "finish_date": finish_date
         }
