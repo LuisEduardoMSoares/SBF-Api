@@ -1,5 +1,5 @@
 # Standard Imports
-from datetime import datetime, date
+from datetime import date
 from fastapi import APIRouter
 from fastapi import HTTPException
 from fastapi import Depends
@@ -31,6 +31,7 @@ from .services import TransactionService
 from .schemas import IncomingTransactionCreate, OutgoingTransactionCreate
 from .schemas import IncomingTransactionResponse, OutgoingTransactionResponse
 from .schemas import TransactionResponse, TransactionsResponse
+from .schemas import TransactionTypeEnum
 
 
 
@@ -38,9 +39,9 @@ route = APIRouter()
 transaction_service = TransactionService()
 
 
-#TODO: filtro pelo tipo, nome do produto, nome do fornecedor, range de datas e paginação
 @route.get("/transaction/", response_model_exclude_unset=True, response_model=List[TransactionResponse], response_model_exclude_none=True)
 def get_all_transactions( product_name: Optional[str] = '', provider_name: Optional[str] = '',
+    description: Optional[str] = '', transaction_type: Optional[TransactionTypeEnum] = '',
     start_date: Optional[date] = '' ,finish_date: Optional[date] = '',
     db: Session = Depends(get_db), user: User=Depends(manager)):
     """
@@ -49,6 +50,8 @@ def get_all_transactions( product_name: Optional[str] = '', provider_name: Optio
     ### Args:   
       >  product_name (str): Product name to filter.  
       >  provider_name (str): Provider name to filter.  
+      >  description (str): Description to filter.  
+      >  transaction_type (Enum): Transaction type to filter. (ENTRADA/SAIDA)  
       >  start_date (date): Start date to filter. (YYYY-MM-DD)  
       >  finish_date (date): Finish date to filter. (YYYY-MM-DD)
 
@@ -60,6 +63,8 @@ def get_all_transactions( product_name: Optional[str] = '', provider_name: Optio
             db,
             product_name,
             provider_name,
+            description,
+            transaction_type,
             start_date,
             finish_date
         )
@@ -71,6 +76,7 @@ def get_all_transactions( product_name: Optional[str] = '', provider_name: Optio
 @route.get("/transaction/page/{page}", response_model=TransactionsResponse)
 def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: int = Query(default=20, gt=0),
     product_name: Optional[str] = '', provider_name: Optional[str] = '',
+    description: Optional[str] = '', transaction_type: Optional[TransactionTypeEnum] = '',
     start_date: Optional[date] = '' ,finish_date: Optional[date] = '',
     db: Session = Depends(get_db), user: User=Depends(manager)):
     """
@@ -81,6 +87,8 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
       >  per_page (int): Amount of transactions per page.  
       >  product_name (str): Product name to filter.  
       >  provider_name (str): Provider name to filter.  
+      >  description (str): Description to filter.  
+      >  transaction_type (Enum): Transaction type to filter. (ENTRADA/SAIDA)  
       >  start_date (date): Start date to filter. (YYYY-MM-DD)  
       >  finish_date (date): Finish date to filter. (YYYY-MM-DD)
 
@@ -94,6 +102,8 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
             per_page,
             product_name,
             provider_name,
+            description,
+            transaction_type,
             start_date,
             finish_date
         )
