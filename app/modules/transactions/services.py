@@ -71,18 +71,29 @@ class TransactionService:
 
     def _make_transaction_query_with_filters(self, db: Session, product_name: str = '', provider_name: str = '',
         description: str = '', transaction_type: TransactionTypeEnum = '',
-        start_date: date = None, finish_date: date = None) -> Query:
+        start_date: date = '', finish_date: date = '') -> Query:
         query = db.query(Transaction)
 
         # Filter by range datetimes
         if type(start_date) == date and type(finish_date) == date:
-            finish_date += timedelta(days=1)
-            if finish_date < start_date:
+            if start_date > finish_date:
                 raise InvalidRangeTime("Invalid datetime range")
             else:
                 query = query.filter(and_(
                     Transaction.date >= start_date, Transaction.date <= finish_date 
                 ))
+
+        # Filter only by start date
+        elif type(start_date) == date and finish_date == '':
+            query = query.filter(
+                Transaction.date >= start_date
+            )
+
+        # Filter only by finish date
+        elif type(finish_date) == date and start_date == '':
+            query = query.filter(
+                Transaction.date <= finish_date
+            )
 
         # Filter by provider name
         if provider_name != '':
@@ -110,7 +121,6 @@ class TransactionService:
                 TransactionProduct.transaction_id
             ).all()
             ids: List[int] = [id[0] for id in ids]
-            print(ids)
 
             query = query.filter(
                 Transaction.id.in_(ids)

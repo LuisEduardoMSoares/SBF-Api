@@ -21,6 +21,7 @@ from ...utils.exceptions import InvalidStockQuantity
 from ...utils.exceptions import NotEnoughStockQuantity
 from ...utils.exceptions import ProviderNotFound
 from ...utils.exceptions import InvalidPageItemsNumber
+from ...utils.exceptions import InvalidRangeTime
 
 # Authentication Imports
 from ..users.models import User
@@ -71,6 +72,9 @@ def get_all_transactions( product_name: Optional[str] = '', provider_name: Optio
         return transactions
     except ItensNotFound:
 	      raise HTTPException(status_code=404, detail="Nenhuma movimentação foi encontrada.")
+    except InvalidRangeTime:
+	      raise HTTPException(status_code=400, detail=f"A data de inicio {start_date} deve ser menor que a data final {finish_date}.")
+
 
 
 @route.get("/transaction/page/{page}", response_model=TransactionsResponse)
@@ -93,7 +97,7 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
       >  finish_date (date): Finish date to filter. (YYYY-MM-DD)
 
     ### Returns:  
-      >  TransactionsResponse: A dict with providers records and pagination metadata.
+      >  TransactionsResponse: A dict with transactions records and pagination metadata.
     """
     try:
         providers = transaction_service.fetch_all_with_pagination(
@@ -114,6 +118,8 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
 	      raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
     except ItensNotFound:
 	      raise HTTPException(status_code=404, detail="Nenhuma movimentação encontrada.")
+    except InvalidRangeTime:
+	      raise HTTPException(status_code=400, detail=f"A data de inicio {start_date} deve ser menor que a data final {finish_date}.")
 
 
 @route.get("/transaction/{id}", response_model_exclude_unset=True, response_model=TransactionResponse)
