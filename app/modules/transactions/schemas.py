@@ -108,7 +108,6 @@ class OutgoingTransactionCreate(BaseSchema):
     class Config:
         schema_extra = {
             "example": {
-                "id": 1,
                 "type": "SAIDA",
                 "description": "Operação de teste de saida de produtos",
                 "date": "2020-01-01",
