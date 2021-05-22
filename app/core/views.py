@@ -5,6 +5,9 @@ from fastapi import FastAPI
 from .. import API_PREFIX
 
 
+# Import First Admin Registration Route
+from .first_access import route as first_access_route
+
 # Import Login Core
 from .auth import route as auth_router
 
@@ -28,14 +31,17 @@ def create_routes(app: FastAPI) -> None:
     """
     Include routes.
     """
-    # Import Login Core
-    app.include_router(auth_router, tags=['Authentication'], prefix=API_PREFIX)
-
     # Include Core Router
     app.include_router(core_router, tags=['Core'], prefix=API_PREFIX)
 
+    # Include First Admin User Registration Router
+    app.include_router(first_access_route, tags=['First Access'], prefix=API_PREFIX)
+
+    # Import Login Core
+    app.include_router(auth_router, tags=['Authentication'], prefix=API_PREFIX)
+
     # Include Project Info Router
-    app.include_router(user_router, tags=['Users'], prefix=API_PREFIX)
+    app.include_router(user_router, tags=['Users'], prefix=API_PREFIX+'/admin')
 
     # Include Provider Router
     app.include_router(provider_router, tags=['Providers'], prefix=API_PREFIX)

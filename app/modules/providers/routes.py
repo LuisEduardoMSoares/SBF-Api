@@ -36,7 +36,7 @@ provider_service = ProviderService()
 
 
 @route.get("/providers/", response_model_exclude_unset=True, response_model=ProvidersResponse)
-def get_all_providers(db: Session = Depends(get_db), user: User=Depends(manager), name: Optional[str] = ''):
+def get_all_providers(db: Session = Depends(get_db), auth_user: User=Depends(manager), name: Optional[str] = ''):
     """
     ## Retrieve all providers.
 
@@ -56,7 +56,7 @@ def get_all_providers(db: Session = Depends(get_db), user: User=Depends(manager)
 
 @route.get("/providers/page/{page}", response_model=ProvidersResponse)
 def get_all_providers_in_current_page(page: int = Path(..., gt=0), per_page: int = Query(default=20, gt=0),
-    name: Optional[str] = '', db: Session = Depends(get_db), user: User=Depends(manager)):
+    name: Optional[str] = '', db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Retrieve all providers in current page.
 
@@ -80,7 +80,7 @@ def get_all_providers_in_current_page(page: int = Path(..., gt=0), per_page: int
 
 
 @route.get("/providers/{id}", response_model=ProviderResponse)
-def get_one_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+def get_one_provider(id: int, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Retrieve one provider.
 
@@ -100,7 +100,7 @@ def get_one_provider(id: int, db: Session = Depends(get_db), user: User=Depends(
 
 
 @route.post("/providers/", status_code=201, response_model=ProviderResponse)
-def create_provider(provider: ProviderCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def create_provider(provider: ProviderCreate, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Creates a provider.
 
@@ -111,15 +111,15 @@ def create_provider(provider: ProviderCreate, db: Session = Depends(get_db), use
       >  ProviderResponse: The provider response model.
     """
     try:
-        provider = provider_service.create(db, user, provider)
+        provider = provider_service.create(db, auth_user, provider)
         return provider
     except IntegrityError as err:
-        if "base_providers_cnpj_key" in repr(err):
+        if "cnpj" in repr(err):
             raise HTTPException(status_code=422, detail="Já existe um fornecedor com o CNPJ informado cadastrado.")
 
 
 @route.patch("/providers/{id}", response_model=ProviderResponse)
-def update_provider(id: int, provider: ProviderUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def update_provider(id: int, provider: ProviderUpdate, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Edits a provider by id.
 
@@ -140,7 +140,7 @@ def update_provider(id: int, provider: ProviderUpdate, db: Session = Depends(get
 
 
 @route.delete("/providers/{id}", response_model=ProviderResponse)
-def delete_provider(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+def delete_provider(id: int, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Deletes a provider by id.
 

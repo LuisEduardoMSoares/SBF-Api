@@ -1,4 +1,3 @@
-from app.modules import transactions
 import sqlalchemy as db
 
 from sqlalchemy.orm import relationship
@@ -16,6 +15,9 @@ class User(BaseMixin, Base):
     last_name = db.Column(db.String)
     email = db.Column(db.String, unique=True)
     password = db.Column(db.String)
+
+    admin = db.Column("is_admin", db.Boolean, default=False)
+    is_deleted = db.Column(db.Boolean, default=False)
 
     # Relationships
     products_created = relationship("Product", lazy="select", back_populates="user")

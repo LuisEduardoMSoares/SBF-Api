@@ -1,3 +1,7 @@
+# Standard Imports
+from time import time as timestamp
+from sqlalchemy.sql.expression import and_
+
 # Typing Imports
 from typing import List
 from sqlalchemy.orm import Session
@@ -10,7 +14,7 @@ from .schemas import UserResponse
 
 
 class UserService:
-    def fetch_all(self, db: Session) -> List[UserResponse]:
+    def fetch_all(self, db: Session, only_admin=False) -> List[UserResponse]:
         """
         Retrieve a list of users.
 
@@ -20,8 +24,14 @@ class UserService:
         Returns:
             List[UserResponse]: A List of users response models.
         """
-        users = db.query(User).all()
-        return users
+        users = db.query(User).filter(
+            User.is_deleted == False
+        )
+
+        if only_admin == True:
+            users = users.filter(User.admin == True)
+
+        return users.all()
 
     def fetch(self, db: Session, id: int) -> UserResponse:
         """
@@ -31,13 +41,13 @@ class UserService:
             db (Session): The database session.
             id (int): The user ID.
 
-        Raises:
-            HTTPException: Raises 404 if user was not found.
-
         Returns:
             UserResponse: The user response model.
         """
-        single_user = db.query(User).get(id)
+        single_user = db.query(User).filter(and_(
+            User.id == id,
+            User.is_deleted == False
+        )).first()
         return single_user
 
     def create(self, db: Session, user: UserCreate) -> UserResponse:
@@ -69,16 +79,20 @@ class UserService:
         Returns:
             UserResponse: The User Response model.
         """        
-        original_user = db.query(User).get(id)
-        if not original_user:
+        db_user = db.query(User).filter(and_(
+            User.id == id,
+            User.is_deleted == False
+        )).first()
+        if not db_user:
             return None
 
         if user.password != None:
-            original_user.password = user.password
-            original_user.hash_password()
-            user.password = original_user.password
-        original_user.update(db, **user.dict(exclude_unset=True))
-        new_user = UserResponse.from_orm(original_user)
+            db_user.password = user.password
+            db_user.hash_password()
+            user.password = db_user.password
+
+        db_user.update(db, **user.dict(exclude_unset=True))
+        new_user = UserResponse.from_orm(db_user)
         return new_user
 
     def delete(self, db: Session, id: int) -> UserResponse:
@@ -91,9 +105,13 @@ class UserService:
         Returns:
             UserResponse: The User Response model.
         """        
-        deleted_user = db.query(User).get(id)
-        if not deleted_user:
+        db_user = db.query(User).filter(and_(
+            User.id == id,
+            User.is_deleted == False
+        )).first()
+        if not db_user:
             return None
 
-        deleted_user.delete(db)
-        return deleted_user
+        db_user.update(db, is_deleted=True, email=f'{timestamp()}_{db_user.email}')
+        db_user = UserResponse.from_orm(db_user)
+        return db_user

@@ -35,7 +35,7 @@ product_service = ProductService()
 
 
 @route.get("/products/", response_model_exclude_unset=True, response_model=ProductsResponse)
-def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager), name: Optional[str] = ''):
+def get_all_products(db: Session = Depends(get_db), auth_user: User=Depends(manager), name: Optional[str] = ''):
     """
     ## Retrieve all products.
 
@@ -55,7 +55,7 @@ def get_all_products(db: Session = Depends(get_db), user: User=Depends(manager),
 
 @route.get("/products/page/{page}", response_model=ProductsResponse)
 def get_all_products_in_current_page(page: int = Path(..., gt=0), per_page: int = Query(default=20, gt=0),
-    name: Optional[str] = '', db: Session = Depends(get_db), user: User=Depends(manager)):
+    name: Optional[str] = '', db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Retrieve all products in current page.
 
@@ -80,7 +80,7 @@ def get_all_products_in_current_page(page: int = Path(..., gt=0), per_page: int 
 
 
 @route.get("/products/{id}", response_model=ProductResponse)
-def get_one_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+def get_one_product(id: int, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Retrieve one product.
 
@@ -100,7 +100,7 @@ def get_one_product(id: int, db: Session = Depends(get_db), user: User=Depends(m
 
 
 @route.post("/products/", response_model=ProductResponse)
-def create_product(product: ProductCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def create_product(product: ProductCreate, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Creates a product.
 
@@ -110,12 +110,12 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db), user: 
     ### Returns:  
       >  ProductResponse: The product response model.
     """
-    product = product_service.create(db, product, user)
+    product = product_service.create(db, product, auth_user)
     return product
 
 
 @route.patch("/products/{id}", response_model=ProductResponse)
-def update_product(id: int, product: ProductUpdate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def update_product(id: int, product: ProductUpdate, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Edits a product by id.
 
@@ -136,7 +136,7 @@ def update_product(id: int, product: ProductUpdate, db: Session = Depends(get_db
 
 
 @route.delete("/products/{id}", response_model=ProductResponse)
-def delete_product(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+def delete_product(id: int, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Deletes a product by id.
 

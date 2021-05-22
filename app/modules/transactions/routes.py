@@ -44,7 +44,7 @@ transaction_service = TransactionService()
 def get_all_transactions( product_name: Optional[str] = '', provider_name: Optional[str] = '',
     description: Optional[str] = '', transaction_type: Optional[TransactionTypeEnum] = '',
     start_date: Optional[date] = '' ,finish_date: Optional[date] = '',
-    db: Session = Depends(get_db), user: User=Depends(manager)):
+    db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Retrieve all transactions.
 
@@ -82,7 +82,7 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
     product_name: Optional[str] = '', provider_name: Optional[str] = '',
     description: Optional[str] = '', transaction_type: Optional[TransactionTypeEnum] = '',
     start_date: Optional[date] = '' ,finish_date: Optional[date] = '',
-    db: Session = Depends(get_db), user: User=Depends(manager)):
+    db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Retrieve all transactions in current page.
 
@@ -123,7 +123,7 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
 
 
 @route.get("/transaction/{id}", response_model_exclude_unset=True, response_model=TransactionResponse)
-def get_one_transaction(id: int, db: Session = Depends(get_db), user: User=Depends(manager)):
+def get_one_transaction(id: int, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Retrieve one transaction by id.
 
@@ -141,7 +141,7 @@ def get_one_transaction(id: int, db: Session = Depends(get_db), user: User=Depen
 
 
 @route.post("/incoming/transaction/", status_code=201, response_model=IncomingTransactionResponse, response_model_exclude_none=True)
-def create_incoming_transaction(transaction: IncomingTransactionCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def create_incoming_transaction(transaction: IncomingTransactionCreate, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Creates an incoming transaction.
 
@@ -165,7 +165,7 @@ def create_incoming_transaction(transaction: IncomingTransactionCreate, db: Sess
 
 
 @route.post("/outgoing/transaction/", status_code=201, response_model=OutgoingTransactionResponse, response_model_exclude_none=True)
-def create_outgoing_transaction(transaction: OutgoingTransactionCreate, db: Session = Depends(get_db), user: User=Depends(manager)):
+def create_outgoing_transaction(transaction: OutgoingTransactionCreate, db: Session = Depends(get_db), auth_user: User=Depends(manager)):
     """
     ## Creates an outgoing transaction.
 
@@ -176,7 +176,7 @@ def create_outgoing_transaction(transaction: OutgoingTransactionCreate, db: Sess
       >  OutgoingTransactionResponse: The outgoing transaction response model.
     """
     try:
-        transaction = transaction_service.create(db, user, transaction)
+        transaction = transaction_service.create(db, auth_user, transaction)
         return transaction
     except ProductsNotFound as err:
         raise HTTPException(status_code=400, detail="A movimentação a ser registrada deve conter no minimo um produto.")

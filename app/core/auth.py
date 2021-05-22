@@ -1,11 +1,9 @@
 # Standard Imports
-from os import name
 from fastapi import Depends
 from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_login import LoginManager
 from fastapi_login.exceptions import InvalidCredentialsException
-from sqlalchemy import or_
 from datetime import timedelta
 
 from .. import API_PREFIX
@@ -64,13 +62,8 @@ def login(data: LoginData):
         data=dict(sub=username),
         expires=timedelta(days=JWT_EXPIRATION_DAYS)
     )
-    return {'access_token': access_token, 'token_type': 'bearer'}
-
-
-
-# Route for test authentication
-from ..modules.users.schemas import UserResponse
-
-@route.get('/auth/protected', response_model=UserResponse)
-def test_authentication(user: User=Depends(manager)):
-    return user
+    return {
+        'access_token': access_token,
+        'token_type': 'bearer',
+        'admin': user.admin
+    }
