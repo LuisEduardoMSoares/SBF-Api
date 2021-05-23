@@ -152,7 +152,7 @@ def create_incoming_transaction(transaction: IncomingTransactionCreate, db: Sess
       >  IncomingTransactionResponse: The incoming transaction response model.
     """
     try:
-        transaction = transaction_service.create(db, user, transaction)
+        transaction = transaction_service.create(db, auth_user, transaction)
         return transaction
     except ProductsNotFound as err:
         raise HTTPException(status_code=400, detail="A movimentação a ser registrada deve conter no minimo um produto.")
