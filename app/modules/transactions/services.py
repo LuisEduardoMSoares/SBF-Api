@@ -239,10 +239,11 @@ class TransactionService:
         )
         return response
 
-    def _check_provider_existence(self, db: Session, provider_id) -> None:
-        provider = db.query(Provider).filter(Provider.id == provider_id).first()
-        if provider == None:
-            raise ProviderNotFound(str(provider_id))
+    def _check_provider_existence(self, db: Session, provider_id: int) -> None:
+        if provider_id != None:
+            provider = db.query(Provider).filter(Provider.id == provider_id).first()
+            if provider == None:
+                raise ProviderNotFound(str(provider_id))
 
     def _sort_by_id_check_and_sum_duplicates(self, payload: List[TransactionProductsData]) -> List[TransactionProductsData]:
         already_added = []
