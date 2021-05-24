@@ -62,8 +62,8 @@ class IncomingTransactionResponse(BaseSchema):
     type: TransactionTypeEnum
     description: Optional[str]
     date: date
-    provider_id: int
-    provider_name: str
+    provider_id: Optional[int]
+    provider_name: Optional[str]
     products: List[TransactionProductsData]
     metadatetime: MetaDatetimeSchema
 
