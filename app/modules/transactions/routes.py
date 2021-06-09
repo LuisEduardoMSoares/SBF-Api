@@ -71,9 +71,9 @@ def get_all_transactions( product_name: Optional[str] = '', provider_name: Optio
         )
         return transactions
     except ItensNotFound:
-	      raise HTTPException(status_code=404, detail="Nenhuma movimentação foi encontrada.")
+	    raise HTTPException(status_code=404, detail="Nenhuma movimentação foi encontrada.")
     except InvalidRangeTime:
-	      raise HTTPException(status_code=400, detail=f"A data de inicio {start_date} deve ser menor que a data final {finish_date}.")
+	    raise HTTPException(status_code=400, detail=f"A data de inicio {start_date} deve ser menor que a data final {finish_date}.")
 
 
 
@@ -113,13 +113,13 @@ def get_all_transactions_in_current_page(page: int = Path(..., gt=0), per_page: 
         )
         return providers
     except InvalidPage:
-	      raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
+	    raise HTTPException(status_code=400, detail="Não foi possivel recuperar os itens na página informada.")
     except InvalidPageItemsNumber:
-	      raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
+	    raise HTTPException(status_code=400, detail="Quantidade de itens por pagina precisa ser maior que zero.")
     except ItensNotFound:
-	      raise HTTPException(status_code=404, detail="Nenhuma movimentação encontrada.")
+	    raise HTTPException(status_code=404, detail="Nenhuma movimentação encontrada.")
     except InvalidRangeTime:
-	      raise HTTPException(status_code=400, detail=f"A data de inicio {start_date} deve ser menor que a data final {finish_date}.")
+	    raise HTTPException(status_code=400, detail=f"A data de inicio {start_date} deve ser menor que a data final {finish_date}.")
 
 
 @route.get("/transaction/{id}", response_model_exclude_unset=True, response_model=TransactionResponse)
@@ -137,7 +137,7 @@ def get_one_transaction(id: int, db: Session = Depends(get_db), auth_user: User=
         transaction = transaction_service.fetch_one(db, id)
         return transaction
     except ItensNotFound:
-	      raise HTTPException(status_code=404, detail=f"Movimentação de id {id} não foi encontrada.")
+	    raise HTTPException(status_code=404, detail=f"Movimentação de id {id} não foi encontrada.")
 
 
 @route.post("/incoming/transaction/", status_code=201, response_model=IncomingTransactionResponse, response_model_exclude_none=True)
@@ -154,14 +154,18 @@ def create_incoming_transaction(transaction: IncomingTransactionCreate, db: Sess
     try:
         transaction = transaction_service.create(db, auth_user, transaction)
         return transaction
+    except ItensNotFound as err:
+	    raise HTTPException(status_code=404, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
     except ProductsNotFound as err:
         raise HTTPException(status_code=400, detail="A movimentação a ser registrada deve conter no minimo um produto.")
     except ProviderNotFound as err:
-	      raise HTTPException(status_code=404, detail=f"O fornecedor informado não foi encontrado: {str(err)}")
-    except ItensNotFound as err:
-	      raise HTTPException(status_code=404, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
+	    raise HTTPException(status_code=404, detail=f"O fornecedor informado não foi encontrado: {str(err)}")
     except InvalidStockQuantity as err:
-	      raise HTTPException(status_code=400, detail=f"A quantidade de estoque para os seguintes produtos deve ser maior do que zero: {str(err)}")
+        products_missing = transaction_service.make_response(db, str(err))
+        raise HTTPException(status_code=400, detail={
+            "message": "A quantidade informada para os seguintes produtos deve ser maior do que zero.",
+            "products_missing": products_missing
+        })
 
 
 @route.post("/outgoing/transaction/", status_code=201, response_model=OutgoingTransactionResponse, response_model_exclude_none=True)
@@ -178,11 +182,19 @@ def create_outgoing_transaction(transaction: OutgoingTransactionCreate, db: Sess
     try:
         transaction = transaction_service.create(db, auth_user, transaction)
         return transaction
+    except ItensNotFound as err:
+	    raise HTTPException(status_code=404, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
     except ProductsNotFound as err:
         raise HTTPException(status_code=400, detail="A movimentação a ser registrada deve conter no minimo um produto.")
-    except ItensNotFound as err:
-	      raise HTTPException(status_code=404, detail=f"Os seguintes produtos não foram encontrados no sistema: {str(err)}")
     except InvalidStockQuantity as err:
-	      raise HTTPException(status_code=400, detail=f"A quantidade informada para os seguintes produtos deve ser maior do que zero: {str(err)}")
+        products_missing = transaction_service.make_response(db, str(err))
+        raise HTTPException(status_code=400, detail={
+            "message": "A quantidade informada para os seguintes produtos deve ser maior do que zero.",
+            "products_missing": products_missing
+        })
     except NotEnoughStockQuantity as err:
-	      raise HTTPException(status_code=422, detail=f"Os produtos informados não possuem quantidade em estoque suficiente para a saída: {str(err)}")
+        products_missing = transaction_service.make_response(db, str(err))
+        raise HTTPException(status_code=422, detail={
+            "message": "Os produtos informados não possuem quantidade em estoque suficiente para a saída.",
+            "products_missing": products_missing
+        })

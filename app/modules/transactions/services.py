@@ -243,7 +243,7 @@ class TransactionService:
         if provider_id != None:
             provider = db.query(Provider).filter(Provider.id == provider_id).first()
             if provider == None:
-                raise ProviderNotFound(str(provider_id))
+                raise ProviderNotFound(provider.name)
 
     def _sort_by_id_check_and_sum_duplicates(self, payload: List[TransactionProductsData]) -> List[TransactionProductsData]:
         already_added = []
@@ -272,7 +272,7 @@ class TransactionService:
 
         if len(invalid_stock_ids) > 0:
             raise InvalidStockQuantity(
-                str(invalid_stock_ids).replace('[','').replace(']','')
+                str(invalid_stock_ids)
             )
 
         return products_ids
@@ -289,7 +289,7 @@ class TransactionService:
 
         if len(invalid_stock_ids) > 0:
             raise InvalidStockQuantity(
-                str(invalid_stock_ids).replace('[','').replace(']','')
+                str(invalid_stock_ids)
             )
 
         return products_ids
@@ -303,7 +303,7 @@ class TransactionService:
 
         if len(invalid_stock_ids) > 0:
             raise NotEnoughStockQuantity(
-                str(invalid_stock_ids).replace('[','').replace(']','')
+                str(invalid_stock_ids)
             )
 
     def _get_products_from_database(self, db: Session, payload_products_id: List[int]) -> List[Product]:
@@ -319,7 +319,7 @@ class TransactionService:
                     payload_products_id.remove(p_found.id)
             
             raise ItensNotFound(
-                str(payload_products_id).replace('[','').replace(']','')
+                str(payload_products_id)
             )
 
         else:
@@ -425,3 +425,17 @@ class TransactionService:
 
         # transaction = self.fetch_one(db, transaction.id)
         return TransactionResponse.from_orm(transaction)
+
+    def make_response(self, db: Session, err: str):
+        products_ids: List[int] = eval(err)
+        products = db.query(Product).filter(Product.id.in_(products_ids)).all()
+        
+        data = []
+        for product in products:
+            data.append({
+                "id": product.id,
+                "name": product.name,
+                "inventory": product.inventory
+            })
+        
+        return data
