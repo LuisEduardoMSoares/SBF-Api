@@ -1,3 +1,4 @@
+import re as regex
 from validate_docbr import CNPJ
 
 from typing import List, Optional
@@ -6,6 +7,14 @@ from pydantic import EmailStr, validator
 from ...utils.helpers import BaseSchema, MetaDatetimeSchema
 from ...utils.pagination import PaginationMetadataSchema
 
+
+def _cnpj_validator(value) -> str:
+    number_list = regex.findall("\d+", value)
+    cnpj = ''.join(number_list)
+
+    if CNPJ().validate(cnpj) == False:
+        raise ValueError('Invalid CNPJ')
+    return cnpj
 
 class ProviderCreate(BaseSchema):
     name: str
@@ -16,9 +25,7 @@ class ProviderCreate(BaseSchema):
 
     @validator('cnpj')
     def cnpj_validation(cls, field_value):
-        if CNPJ().validate(field_value) == False:
-            raise ValueError('Invalid CNPJ')
-        return field_value
+        return _cnpj_validator(field_value)
 
     class Config:
         schema_extra = {
@@ -40,9 +47,7 @@ class ProviderUpdate(BaseSchema):
 
     @validator('cnpj')
     def cnpj_validation(cls, field_value):
-        if CNPJ().validate(field_value) == False:
-            raise ValueError('Invalid CNPJ')
-        return field_value
+        return _cnpj_validator(field_value)
 
     class Config:
         schema_extra = {
